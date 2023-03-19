@@ -1,0 +1,4 @@
+[toolchain]
+# channel = "nightly"
+# Embassy uses this nightly.
+channel = "nightly-2023-02-07"
