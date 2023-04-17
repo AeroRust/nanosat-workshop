@@ -36,3 +36,4 @@ build-std = ["alloc", "core"]
 [alias]
 rb = "run --target riscv32imac-unknown-none-elf --bin"
 rrb = "run --target riscv32imac-unknown-none-elf --release --bin"
+t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
