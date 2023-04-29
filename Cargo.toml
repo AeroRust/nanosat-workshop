@@ -1,45 +1,26 @@
-[package]
-name = "nanosat"
-version = "0.1.0"
-authors = ["Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>"]
-edition = "2021"
-license = "MIT OR Apache-2.0"
+[workspace]
 
-default-run = "nanosat"
+members = [
+    #"onboard-computer",
+    "power-system"
+]
 
-[features]
-# "feature `embassy-time-systick` includes `esp32c3-hal:embassy-time-systick` which is neither a dependency nor another feature"
-# default = ["embassy-time-systick", "defmt"]
-default = ["embassy-time-timg0", "esp32"]
-# default = ["defmt", "embassy-time-timg0", "wifi"]
-wifi = ["esp-wifi"]
-std = ["embassy-executor/arch-std"]
-esp32 = ["embassy-executor/arch-riscv32"]
-
-embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
-# embassy-time-systick = ["hal/embassy-time-systick"]
-embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
-
-# embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
-# embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
-# embassy-time-systick = ["embassy-time/tick-hz-16_000_000"]
-# embassy-time-timg0 = ["embassy-time/tick-hz-1_000_000"]
-
-[dependencies]
+[workspace.dependencies]
 # Base crates
 # hal = { version = "0.7", package = "esp32c3-hal", features = ["rt", "embassy", "eh1", "vectored", "async", "embassy-time-systick"], git = "https://github.com/esp-rs/esp-hal.git", rev = "2eeb3db" }
-hal = { version = "0.7", package = "esp32c3-hal", features = ["rt", "embassy", "eh1", "vectored", "async",] }
+hal = { package = "esp32c3-hal", version = "0.8", features = ["rt", "embassy", "eh1", "vectored", "async", ] }
+# esp32c3 = { version = "0.14", features = ["critical-section"]}
 # hal = { version = "0.7", package = "esp32c3-hal", features = ["rt", "embassy", "eh1", "vectored", "async", "embassy-time-timg0"], git = "https://github.com/esp-rs/esp-hal.git", rev = "2eeb3db" }
 # requires `esp32s2-hal/embassy-time-timg0`!
 # esp-wifi = { git = "https://github.com/esp-rs/esp-wifi", rev = "74e9f18", features = ["esp32c3", "wifi", "embedded-svc", "embassy-net"], optional = true }
-esp-wifi = { path = "../esp-wifi/esp-wifi", features = ["esp32c3", "wifi", "embedded-svc", "embassy-net"], optional = true }
+esp-wifi = { path = "../esp-wifi/esp-wifi", features = ["esp32c3", "wifi", "embedded-svc", "embassy-net"] }
 
 # debugging
-esp-backtrace = { version = "0.6", features = ["esp32c3", "panic-handler", "print-uart"] }
-esp-println = { version = "0.4", features = ["esp32c3"] }
+esp-backtrace = { version = "0.7", features = ["esp32c3", "panic-handler", "print-uart"] }
+esp-println = { version = "0.5", features = ["esp32c3"] }
 
 # Allocator
-esp-alloc = { version = "0.2.0", features = ["oom-handler"] }
+# esp-alloc = { version = "0.3.0", features = ["oom-handler"] }
 
 # Embassy
 # embassy latest main ref: f9c0c53
@@ -48,14 +29,14 @@ esp-alloc = { version = "0.2.0", features = ["oom-handler"] }
 # executor with new features: e2516bb
 # embassy-executor  = { git = "https://github.com/embassy-rs/embassy", rev = "26474ce", features = ["nightly", "integrated-timers"] }
 embassy-executor  = { git = "https://github.com/embassy-rs/embassy", rev = "e2516bb", features = ["nightly", "integrated-timers", "executor-thread"] }
-embassy-sync       = { version = "0.1.0", features = ["nightly", "defmt"]}
+embassy-sync       = { version = "0.2.0", features = ["nightly", "defmt"]}
 embassy-futures = { version = "0.1.0",  features = ["defmt"] }
 embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "26474ce", features = ["nightly", "defmt", "udp", "dhcpv4", "medium-ethernet"] }
 embassy-net-driver = { git = "https://github.com/embassy-rs/embassy", rev = "26474ce" }
 embassy-time       = { version = "0.1.0", features = ["nightly"], git = "https://github.com/embassy-rs/embassy", rev = "26474ce" }
 
 # Keep the same as in esp-wifi
-embedded-svc = { version = "0.23.1", default-features = false, features = ["defmt"] }
+embedded-svc = { version = "0.24", default-features = false, features = ["defmt"] }
 
 embedded-hal       = { version = "0.2.7", features = ["unproven"] }
 embedded-hal-1     = { version = "=1.0.0-alpha.9", package = "embedded-hal" }
@@ -63,27 +44,16 @@ embedded-hal-async = { version = "0.1.0-alpha.3" }
 embedded-hal-nb    = { version = "=1.0.0-alpha.1" }
 embedded-can       = { version = "0.4.1" }
 
-# required for running tests
-critical-section = { version = "1.1", optional = true }
-
-static_cell = "1.0"
-once_cell = { version = "1.0", default-features = false, features = ["critical-section"] }
-fugit = { version = "0.3", features = ["defmt"] }
 defmt = { version = "0.3" }
-nb = { version = "1.1.0", features = ["defmt-0-3"] }
-heapless = { version = "0.7.16", features = ["defmt"] }
-
 defmt-rtt = "0.4.0"
 
-[dev-dependencies]
-embassy-executor = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy", rev = "e2516bb", features = ["defmt", "integrated-timers", "executor-thread", "arch-std"] }
-critical-section = { version = "1.1", features = ["std"]}
+# required for running tests
+# critical-section = { version = "1.1" }
 
-[patch.crates-io]
+static_cell = "1.0"
+once_cell = { version = "1.0" }
+# once_cell = { version = "1.0", default-features = false }
+fugit = { version = "0.3", features = ["defmt"] }
 
-# hal = { package = "esp32c3-hal", git = "https://github.com/esp-rs/esp-hal", rev = "2eeb3db" }
-
-[[bin]]
-
-name = "nanosat"
-test = false
+nb = { version = "1.1.0", features = ["defmt-0-3"] }
+heapless = { version = "0.7.16", features = ["defmt"] }
