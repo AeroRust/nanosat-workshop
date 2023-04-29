@@ -1,0 +1,10 @@
+[book]
+authors = ["Lachezar Lechev"]
+language = "en"
+multilingual = false
+src = "docs"
+title = "Nanosatellite embedded workshop"
+
+[output.html]
+theme = "./docs/theme"
+input-404 = "Not_found.md"
