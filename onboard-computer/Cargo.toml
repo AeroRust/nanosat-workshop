@@ -1,0 +1,61 @@
+[package]
+name = "onboard-computer"
+version = "0.1.0"
+authors = ["Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>"]
+license = "MIT OR Apache-2.0"
+
+edition = "2021"
+publish = false
+
+[features]
+default = ["embassy-time-timg0", "riscv"]
+
+embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
+embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
+
+wifi = ["esp-wifi"]
+
+std = ["embassy-executor/arch-std", "critical-section/std"]
+# std = ["embassy-executor/arch-std", "once_cell/std", "critical-section/std"]
+riscv = ["embassy-executor/arch-riscv32"]
+
+[dependencies]
+hal = { package = "esp32c3-hal", version = "0.8", features = ["rt", "embassy", "eh1", "vectored", "async", ] }
+
+nanosat = { path = "../nanosat" }
+
+# debugging
+esp-backtrace.workspace = true
+esp-println.workspace = true
+
+# Allocator
+# esp-alloc.workspace = true
+
+esp-wifi = { workspace = true, optional = true }
+# Keep the same as in esp-wifi
+embedded-svc = { workspace = true, optional = true }
+
+embassy-executor = { workspace = true }
+embassy-sync.workspace = true
+embassy-futures.workspace = true
+embassy-net.workspace = true
+embassy-net-driver.workspace = true
+embassy-time.workspace = true
+
+embedded-hal.workspace = true
+embedded-hal-1.workspace = true
+embedded-hal-async.workspace = true
+embedded-hal-nb.workspace = true
+embedded-can.workspace = true
+
+static_cell.workspace = true
+# once_cell = { version = "1.17", default-features = false, features = ["critical-section", "atomic-polyfill"] }
+
+critical-section = { workspace = true }
+nb.workspace = true
+heapless.workspace = true
+
+fugit.workspace = true
+
+defmt-rtt.workspace = true
+defmt.workspace = true

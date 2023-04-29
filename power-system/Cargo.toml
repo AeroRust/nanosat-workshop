@@ -1,0 +1,93 @@
+[package]
+name = "power-system"
+version = "0.1.0"
+authors = ["Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>"]
+license = "MIT OR Apache-2.0"
+
+edition = "2021"
+publish = false
+
+default-run = "power-system"
+
+[features]
+# "feature `embassy-time-systick` includes `esp32c3-hal:embassy-time-systick` which is neither a dependency nor another feature"
+# default = ["embassy-time-systick", "defmt"]
+# default = ["embassy-time-timg0"]
+default = ["embassy-time-timg0", "riscv"]
+# default = ["defmt", "embassy-time-timg0", "wifi"]
+
+wifi = ["esp-wifi"]
+std = ["embassy-executor/arch-std", "critical-section/std"]
+# std = ["embassy-executor/arch-std", "once_cell/std", "critical-section/std"]
+riscv = ["embassy-executor/arch-riscv32"]
+
+embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
+# embassy-time-systick = ["hal/embassy-time-systick"]
+embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
+
+# embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
+# embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
+# embassy-time-systick = ["embassy-time/tick-hz-16_000_000"]
+# embassy-time-timg0 = ["embassy-time/tick-hz-1_000_000"]
+
+[dependencies]
+hal = { package = "esp32c3-hal", version = "0.8", features = ["rt", "embassy", "eh1", "vectored", "async", ] }
+# hal.workspace = true
+# esp32c3.workspace = true
+
+nanosat = { path = "../nanosat" }
+
+# debugging
+esp-backtrace.workspace = true
+esp-println.workspace = true
+
+# Allocator
+# esp-alloc.workspace = true
+
+esp-wifi = { workspace = true, optional = true }
+# Keep the same as in esp-wifi
+embedded-svc = { workspace = true, optional = true }
+
+# Embassy
+# embassy latest main ref: f9c0c53
+# esp32c3-hal rev: cd9a65b
+# esp-wifi embassy-executor rev: cd9a65b
+# executor with new features: e2516bb
+# embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "26474ce", features = ["nightly", "integrated-timers"] }
+embassy-executor = { workspace = true }
+embassy-sync.workspace = true
+embassy-futures.workspace = true
+embassy-net.workspace = true
+embassy-net-driver.workspace = true
+embassy-time.workspace = true
+
+embedded-hal.workspace = true
+embedded-hal-1.workspace = true
+embedded-hal-async.workspace = true
+embedded-hal-nb.workspace = true
+embedded-can.workspace = true
+
+static_cell.workspace = true
+# once_cell = { version = "1", default-features = false, features = ["critical-section", "atomic-polyfill"] }
+
+# required for running tests
+# critical-section = { workspace = true, optional = true, default-features = false }
+critical-section = { workspace = true }
+nb.workspace = true
+heapless.workspace = true
+
+fugit.workspace = true
+
+defmt-rtt.workspace = true
+defmt.workspace = true
+
+[dev-dependencies]
+# embassy-executor = { workspace = true, features = ["defmt", "integrated-timers", "executor-thread", "arch-std"] }
+# critical-section = { workspace = true, features = ["std"] }
+# critical-section = { version = "1.1" }
+# critical-section = { version = "1.1", features = ["std"] }
+
+[[bin]]
+
+name = "power-system"
+test = false
