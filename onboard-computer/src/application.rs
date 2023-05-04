@@ -19,7 +19,7 @@ use esp_wifi::{
 use hal::{
     clock::ClockControl,
     embassy,
-    gpio::{Gpio8, Output, PushPull},
+    gpio::{Gpio8, Output, PushPull, Gpio7},
     peripherals::{Peripherals, UART0},
     prelude::*,
     system::SystemParts,
@@ -31,7 +31,8 @@ use hal::{
     Rtc, Uart, IO,
 };
 
-pub type OnboardLed = Gpio8<Output<PushPull>>;
+/// The Rust ESP32-C3 board has onboard LED on GPIO 7
+pub type OnboardLed = Gpio7<Output<PushPull>>;
 
 pub const CONNECT_TO: IpListenEndpoint = IpListenEndpoint {
     addr: Some(IpAddress::Ipv4(Ipv4Address::UNSPECIFIED)),
@@ -55,7 +56,7 @@ pub struct Application {
 
 impl Application {
     pub fn init(peripherals: Peripherals) -> Self {
-        let mut system: SystemParts = peripherals.SYSTEM.split();
+        let system: SystemParts = peripherals.SYSTEM.split();
         let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
 
         let mut rtc = Rtc::new(peripherals.RTC_CNTL);
@@ -106,9 +107,9 @@ impl Application {
         // Setup peripherals for application
         let io = IO::new(peripherals.GPIO, peripherals.IO_MUX);
 
-        // Olimex ESP32-C3 schematics: https://raw.githubusercontent.com/OLIMEX/ESP32-C3-DevKit-Lipo/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf
-        // Set GPIO8 as an output, and set its state high initially.
-        let onboard_led = io.pins.gpio8.into_push_pull_output();
+        // Rust ESP32-C3 schematics: https://raw.githubusercontent.com/esp-rs/esp-rust-board/master/assets/rust_board_v1_pin-layout.png
+        // Set GPIO7 as an output, and set its state high initially.
+        let onboard_led = io.pins.gpio7.into_push_pull_output();
 
         let uart0 = {
             let config = Config {
@@ -118,9 +119,11 @@ impl Application {
                 stop_bits: StopBits::STOP1,
             };
 
+            // The Rust ESP32-C3 board has debug UART on pins
+            // 20 (TX) and 21 (RX)
             let pins = TxRxPins::new_tx_rx(
-                io.pins.gpio21.into_push_pull_output(),
-                io.pins.gpio20.into_floating_input(),
+                io.pins.gpio20.into_push_pull_output(),
+                io.pins.gpio21.into_floating_input(),
             );
 
             let uart = Uart::new_with_config(

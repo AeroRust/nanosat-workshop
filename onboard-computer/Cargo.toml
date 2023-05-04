@@ -24,6 +24,8 @@ hal = { package = "esp32c3-hal", version = "0.8", features = ["rt", "embassy", "
 
 nanosat = { path = "../nanosat" }
 
+nmea.workspace = true
+
 # debugging
 esp-backtrace.workspace = true
 esp-println.workspace = true
