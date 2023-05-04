@@ -72,7 +72,7 @@ pub struct Application {
 
 impl Application {
     pub fn init(peripherals: Peripherals) -> Self {
-        let mut system: SystemParts = peripherals.SYSTEM.split();
+        let system: SystemParts = peripherals.SYSTEM.split();
         let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
 
         let mut rtc = Rtc::new(peripherals.RTC_CNTL);
