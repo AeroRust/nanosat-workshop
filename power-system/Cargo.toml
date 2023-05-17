@@ -31,7 +31,7 @@ embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"
 # embassy-time-timg0 = ["embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.8", features = ["rt", "embassy", "eh1", "vectored", "async", ] }
+hal = { package = "esp32c3-hal", version = "0.9", features = ["rt", "embassy", "eh1", "vectored", "async", ] }
 # hal.workspace = true
 # esp32c3.workspace = true
 

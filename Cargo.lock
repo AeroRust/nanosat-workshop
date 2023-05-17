@@ -240,13 +240,14 @@ dependencies = [
 
 [[package]]
 name = "embassy-executor"
-version = "0.1.1"
-source = "git+https://github.com/embassy-rs/embassy?rev=fb27594#fb27594b2eb2cca2aea25dd92a7b730c185b6ecc"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "acebf176f4622fd87c7200b568ee32d5b435e3a4d58e39355ce0837b45139eca"
 dependencies = [
  "atomic-polyfill 1.0.2",
  "critical-section",
  "embassy-macros",
- "embassy-time 0.1.1 (git+https://github.com/embassy-rs/embassy?rev=fb27594)",
+ "embassy-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util",
  "static_cell",
 ]
@@ -270,8 +271,9 @@ dependencies = [
 
 [[package]]
 name = "embassy-macros"
-version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy?rev=fb27594#fb27594b2eb2cca2aea25dd92a7b730c185b6ecc"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "acf2e5e33cc670fcdf208c0fdf8ee93493681658562fb1c50ba8ceb09591e0ff"
 dependencies = [
  "darling 0.13.4",
  "proc-macro2",
@@ -514,7 +516,7 @@ dependencies = [
  "embedded-hal 1.0.0-alpha.10",
  "embedded-hal-async",
  "embedded-hal-nb",
- "esp-hal-procmacros",
+ "esp-hal-procmacros 0.5.0 (git+https://github.com/esp-rs/esp-hal?rev=5c5d7f9)",
  "esp-riscv-rt",
  "esp32c3",
  "fugit",
@@ -524,6 +526,51 @@ dependencies = [
  "serde",
  "strum",
  "void",
+]
+
+[[package]]
+name = "esp-hal-common"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d077ffedaa2632004cf73e713438a18706d6d04d2fb0632ffe5a5f02bb9c17e0"
+dependencies = [
+ "basic-toml",
+ "bitflags 2.2.1",
+ "cfg-if",
+ "critical-section",
+ "embassy-futures",
+ "embassy-sync 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embassy-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embedded-can",
+ "embedded-dma",
+ "embedded-hal 0.2.7",
+ "embedded-hal 1.0.0-alpha.10",
+ "embedded-hal-async",
+ "embedded-hal-nb",
+ "esp-hal-procmacros 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "esp-riscv-rt",
+ "esp32c3",
+ "fugit",
+ "nb 1.1.0",
+ "paste",
+ "riscv-atomic-emulation-trap",
+ "serde",
+ "strum",
+ "void",
+]
+
+[[package]]
+name = "esp-hal-procmacros"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14e4123798117de04121fcbd7991f0e2c3cfccf9a31017c94f611013be401080"
+dependencies = [
+ "darling 0.14.4",
+ "proc-macro-crate",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -573,10 +620,10 @@ dependencies = [
  "embedded-io 0.4.0",
  "embedded-svc",
  "enumset",
- "esp-hal-common",
+ "esp-hal-common 0.8.0",
  "esp-wifi-sys",
  "esp32c3",
- "esp32c3-hal",
+ "esp32c3-hal 0.8.0",
  "fugit",
  "heapless",
  "linked_list_allocator",
@@ -616,7 +663,23 @@ dependencies = [
  "embedded-hal 1.0.0-alpha.10",
  "embedded-hal-async",
  "embedded-hal-nb",
- "esp-hal-common",
+ "esp-hal-common 0.8.0",
+]
+
+[[package]]
+name = "esp32c3-hal"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb3469727f70c746eb2ad046f86e5f9e1f4b352d4976c16d1a3e58c0a6cac7e4"
+dependencies = [
+ "cfg-if",
+ "embassy-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embedded-can",
+ "embedded-hal 0.2.7",
+ "embedded-hal 1.0.0-alpha.10",
+ "embedded-hal-async",
+ "embedded-hal-nb",
+ "esp-hal-common 0.9.0",
 ]
 
 [[package]]
@@ -948,7 +1011,7 @@ dependencies = [
  "esp-backtrace",
  "esp-println",
  "esp-wifi",
- "esp32c3-hal",
+ "esp32c3-hal 0.8.0",
  "fugit",
  "heapless",
  "nanosat",
@@ -1003,7 +1066,7 @@ dependencies = [
  "esp-backtrace",
  "esp-println",
  "esp-wifi",
- "esp32c3-hal",
+ "esp32c3-hal 0.9.0",
  "fugit",
  "heapless",
  "nanosat",
