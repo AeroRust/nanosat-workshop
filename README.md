@@ -26,18 +26,22 @@ Use your browser to open [http://localhost:3000](http://localhost:3000)
 cargo install espflash --rev 60224d1 --git https://github.com/esp-rs/espflash
 ```
 
-### `cargo run`
+#### `cargo run`
 
 
 ### Pinout and schematics
 
 
-### Olimex's ESP32-C3 dev board:
+##### Olimex's ESP32-C3 dev board:
 
 https://raw.githubusercontent.com/OLIMEX/ESP32-C3-DevKit-Lipo/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf
 
 https://github.com/OLIMEX/ESP32-C3-DevKit-Lipo/raw/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf
 
+
+##### Espressif's ESP32-C3-DevKit-RUST-1
+
+Pinout, docs, schematics, etc. can be found here: https://github.com/esp-rs/esp-rust-board
 
 ### Debugging with UART
 
