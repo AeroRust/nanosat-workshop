@@ -1,6 +1,6 @@
 # Prerequisite - Chapter 1
 
-1. Install Rust using `rustup` - [https://www.rust-lang.org/tools/install](rust-install)
+1. Install Rust using `rustup` - [https://www.rust-lang.org/tools/install][rust-install]
 2. Setup git - you will also need to set your `ssh` key in Github to:
    - [Generating a new SSH key and adding it to the ssh-agent (Github)][github-generate-ssh-key]
    - [Adding a new SSH key to your GitHub account][github-add-key-to-account]
