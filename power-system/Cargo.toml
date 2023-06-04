@@ -1,7 +1,9 @@
 [package]
 name = "power-system"
 version = "0.1.0"
-authors = ["Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>"]
+authors = [
+    "Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>",
+]
 license = "MIT OR Apache-2.0"
 
 edition = "2021"
@@ -21,9 +23,15 @@ std = ["embassy-executor/arch-std", "critical-section/std"]
 # std = ["embassy-executor/arch-std", "once_cell/std", "critical-section/std"]
 riscv = ["embassy-executor/arch-riscv32"]
 
-embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
+embassy-time-systick = [
+    "hal/embassy-time-systick",
+    "embassy-time/tick-hz-16_000_000",
+]
 # embassy-time-systick = ["hal/embassy-time-systick"]
-embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
+embassy-time-timg0 = [
+    "hal/embassy-time-timg0",
+    "embassy-time/tick-hz-1_000_000",
+]
 
 # embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
 # embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
@@ -31,11 +39,17 @@ embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"
 # embassy-time-timg0 = ["embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.9", features = ["rt", "embassy", "eh1", "vectored", "async", ] }
+hal = { package = "esp32c3-hal", version = "0.9", features = [
+    "rt",
+    "embassy",
+    "eh1",
+    "vectored",
+    "async",
+] }
 # hal.workspace = true
 # esp32c3.workspace = true
 
-nanosat = { path = "../nanosat" }
+# nanosat = { path = "../nanosat" }
 
 # debugging
 esp-backtrace.workspace = true

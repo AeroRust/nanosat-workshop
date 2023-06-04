@@ -857,6 +857,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "libm"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7012b1bbb0719e1097c47611d3898568c546d597c2e74d66f6087edd5233ff4"
+
+[[package]]
 name = "linked_list_allocator"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -900,13 +906,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
-name = "nanosat"
-version = "0.1.0"
-dependencies = [
- "static_cell",
-]
-
-[[package]]
 name = "nb"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -926,11 +925,12 @@ dependencies = [
 
 [[package]]
 name = "nmea"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fea2ae8b47e91d2e007edeeaad399231258b67fdbeecebec0cc2ccd6c275771a"
+checksum = "52f358b8a1b0c32e69c2171f3b84659dcc4fd6544142b419fdea1bf5b536e89d"
 dependencies = [
  "arrayvec",
+ "cfg-if",
  "chrono",
  "heapless",
  "nom",
@@ -987,6 +987,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
  "autocfg",
+ "libm",
 ]
 
 [[package]]
@@ -1014,7 +1015,6 @@ dependencies = [
  "esp32c3-hal 0.8.0",
  "fugit",
  "heapless",
- "nanosat",
  "nb 1.1.0",
  "nmea",
  "static_cell",
@@ -1069,7 +1069,6 @@ dependencies = [
  "esp32c3-hal 0.9.0",
  "fugit",
  "heapless",
- "nanosat",
  "nb 1.1.0",
  "static_cell",
 ]

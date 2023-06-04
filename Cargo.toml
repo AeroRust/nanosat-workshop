@@ -1,10 +1,6 @@
 [workspace]
 
-members = [
-    "nanosat",
-    "onboard-computer",
-    "power-system"
-]
+members = ["onboard-computer", "power-system"]
 
 [workspace.dependencies]
 # Base crates
@@ -14,26 +10,47 @@ members = [
 # hal = { version = "0.7", package = "esp32c3-hal", features = ["rt", "embassy", "eh1", "vectored", "async", "embassy-time-timg0"], git = "https://github.com/esp-rs/esp-hal.git", rev = "2eeb3db" }
 # requires `esp32s2-hal/embassy-time-timg0`!
 # esp-wifi = { git = "https://github.com/esp-rs/esp-wifi", rev = "74e9f18", features = ["esp32c3", "wifi", "embedded-svc", "embassy-net"], optional = true }
-esp-wifi = { git = "https://github.com/esp-rs/esp-wifi", rev = "e5a1cf8", version = "0.1", features = ["esp32c3", "wifi", "embassy-net", "embedded-svc"] }
+esp-wifi = { git = "https://github.com/esp-rs/esp-wifi", rev = "e5a1cf8", version = "0.1", features = [
+    "esp32c3",
+    "wifi",
+    "embassy-net",
+    "embedded-svc",
+] }
 
 # debugging
-esp-backtrace = { version = "0.7", features = ["esp32c3", "panic-handler", "print-uart"] }
+esp-backtrace = { version = "0.7", features = [
+    "esp32c3",
+    "panic-handler",
+    "print-uart",
+] }
 esp-println = { version = "0.5", features = ["esp32c3"] }
 
 # Allocator
 # esp-alloc = { version = "0.3.0", features = ["oom-handler"] }
 
 # Embassy
-embassy-executor = { version = "0.2", features = ["nightly", "integrated-timers", "executor-thread"] }
-embassy-sync = { version = "0.2.0", features = ["nightly", "defmt"]}
+embassy-executor = { version = "0.2", features = [
+    "nightly",
+    "integrated-timers",
+    "executor-thread",
+] }
+embassy-sync = { version = "0.2.0", features = ["nightly", "defmt"] }
 embassy-futures = { version = "0.1.0", features = ["defmt"] }
-embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "fb27594", features = ["nightly", "defmt", "udp", "dhcpv4", "medium-ethernet"] }
+embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "fb27594", features = [
+    "nightly",
+    "defmt",
+    "udp",
+    "dhcpv4",
+    "medium-ethernet",
+] }
 embassy-net-driver = { git = "https://github.com/embassy-rs/embassy", rev = "fb27594" }
 # todo: update to 0.1.1 with embedded-hal-nb alpha 2
 embassy-time = { version = "0.1.1", features = ["nightly"] }
 
 # Keep the same as in esp-wifi
-embedded-svc = { version = "0.24", default-features = false, features = ["defmt"] }
+embedded-svc = { version = "0.24", default-features = false, features = [
+    "defmt",
+] }
 
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
 # todo: update to embedded-hal alpha 10
@@ -50,7 +67,8 @@ defmt-rtt = "0.4.0"
 # required for running tests
 critical-section = { version = "1.1" }
 
-nmea = { version = "0.4", default-features = false }
+# nmea = { version = "0.4", default-features = false }
+nmea = { path = "../nmea/", default-features = false }
 
 static_cell = "1.0"
 # once_cell = { version = "1.0" }
