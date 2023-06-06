@@ -46,10 +46,6 @@ hal = { package = "esp32c3-hal", version = "0.9", features = [
     "vectored",
     "async",
 ] }
-# hal.workspace = true
-# esp32c3.workspace = true
-
-# nanosat = { path = "../nanosat" }
 
 # debugging
 esp-backtrace.workspace = true
@@ -82,10 +78,8 @@ embedded-hal-nb.workspace = true
 embedded-can.workspace = true
 
 static_cell.workspace = true
-# once_cell = { version = "1", default-features = false, features = ["critical-section", "atomic-polyfill"] }
 
 # required for running tests
-# critical-section = { workspace = true, optional = true, default-features = false }
 critical-section = { workspace = true }
 nb.workspace = true
 heapless.workspace = true
@@ -100,6 +94,15 @@ defmt.workspace = true
 # critical-section = { workspace = true, features = ["std"] }
 # critical-section = { version = "1.1" }
 # critical-section = { version = "1.1", features = ["std"] }
+
+[patch.crates-io]
+hal = { package = "esp32c3-hal", version = "0.9", features = [
+    "rt",
+    "embassy",
+    "eh1",
+    "vectored",
+    "async",
+], git = "https://github.com/esp-rs/esp-hal", rev = "2645c4e" }
 
 [[bin]]
 

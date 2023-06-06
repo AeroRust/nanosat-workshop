@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "android-tzdata"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
+
+[[package]]
 name = "anyhow"
 version = "1.0.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -112,11 +118,11 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chrono"
-version = "0.4.24"
+version = "0.4.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e3c5919066adf22df73762e50cffcde3a758f2a848b113b586d1f86728b673b"
+checksum = "ec837a71355b28f6556dbd569b37b3f363091c0bd4b2e735674521b4c5fd9bc5"
 dependencies = [
- "num-integer",
+ "android-tzdata",
  "num-traits",
 ]
 
@@ -507,15 +513,8 @@ dependencies = [
  "bitflags 2.2.1",
  "cfg-if",
  "critical-section",
- "embassy-futures",
- "embassy-sync 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "embassy-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "embedded-can",
  "embedded-dma",
  "embedded-hal 0.2.7",
- "embedded-hal 1.0.0-alpha.10",
- "embedded-hal-async",
- "embedded-hal-nb",
  "esp-hal-procmacros 0.5.0 (git+https://github.com/esp-rs/esp-hal?rev=5c5d7f9)",
  "esp-riscv-rt",
  "esp32c3",
@@ -657,12 +656,7 @@ version = "0.8.0"
 source = "git+https://github.com/esp-rs/esp-hal?rev=5c5d7f9#5c5d7f9876e2716b59b7814f9d06f731e54c8754"
 dependencies = [
  "cfg-if",
- "embassy-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "embedded-can",
  "embedded-hal 0.2.7",
- "embedded-hal 1.0.0-alpha.10",
- "embedded-hal-async",
- "embedded-hal-nb",
  "esp-hal-common 0.8.0",
 ]
 
@@ -971,16 +965,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "num-integer"
-version = "0.1.45"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "225d3389fb3509a24c93f5c29eb6bde2586b98d9f016636dff58d7c6f7569cd9"
-dependencies = [
- "autocfg",
- "num-traits",
-]
-
-[[package]]
 name = "num-traits"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1012,7 +996,7 @@ dependencies = [
  "esp-backtrace",
  "esp-println",
  "esp-wifi",
- "esp32c3-hal 0.8.0",
+ "esp32c3-hal 0.9.0",
  "fugit",
  "heapless",
  "nb 1.1.0",

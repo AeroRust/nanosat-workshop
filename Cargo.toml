@@ -3,11 +3,6 @@
 members = ["onboard-computer", "power-system"]
 
 [workspace.dependencies]
-# Base crates
-# hal = { version = "0.7", package = "esp32c3-hal", features = ["rt", "embassy", "eh1", "vectored", "async", "embassy-time-systick"], git = "https://github.com/esp-rs/esp-hal.git", rev = "2eeb3db" }
-# hal = { package = "esp32c3-hal", version = "0.8", features = ["rt", "embassy", "eh1", "vectored", "async", ] }
-# esp32c3 = { version = "0.14", features = ["critical-section"]}
-# hal = { version = "0.7", package = "esp32c3-hal", features = ["rt", "embassy", "eh1", "vectored", "async", "embassy-time-timg0"], git = "https://github.com/esp-rs/esp-hal.git", rev = "2eeb3db" }
 # requires `esp32s2-hal/embassy-time-timg0`!
 # esp-wifi = { git = "https://github.com/esp-rs/esp-wifi", rev = "74e9f18", features = ["esp32c3", "wifi", "embedded-svc", "embassy-net"], optional = true }
 esp-wifi = { git = "https://github.com/esp-rs/esp-wifi", rev = "e5a1cf8", version = "0.1", features = [
@@ -67,11 +62,9 @@ defmt-rtt = "0.4.0"
 # required for running tests
 critical-section = { version = "1.1" }
 
-# nmea = { version = "0.4", default-features = false }
-nmea = { path = "../nmea/", default-features = false }
+nmea = { version = "0.5.0", default-features = false }
 
 static_cell = "1.0"
-# once_cell = { version = "1.0" }
 # once_cell = { version = "1.0", default-features = false, features = ["critical-section"] }
 fugit = { version = "0.3", features = ["defmt"] }
 

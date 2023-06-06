@@ -28,7 +28,7 @@ std = ["embassy-executor/arch-std", "critical-section/std"]
 riscv = ["embassy-executor/arch-riscv32"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.8", features = [
+hal = { package = "esp32c3-hal", version = "0.9", features = [
     "rt",
     "embassy",
     "eh1",
@@ -36,9 +36,7 @@ hal = { package = "esp32c3-hal", version = "0.8", features = [
     "async",
 ] }
 
-nmea = "0.5.0"
-
-# nmea.workspace = true
+nmea.workspace = true
 
 # debugging
 esp-backtrace.workspace = true
