@@ -1,12 +1,24 @@
-## Power System Application (`power-system` folder)
+## Board's applications
 
-### Battery and power sense
+Both applications are structured in the following way to allow you to follow the exercises:
+- `Application::init` - initialise any peripheral that will be used for the `Application`
+  - [`power_system::Application::init`][power-system-application-init]
+  - [`onboard_computer::Application::init`][onboard-computer-application-init]
+  - `power_system::Application::init`
+
+
+[power-system-application-init]: todo
+[onboard-computer-application-init]: todo
+
+### Power System Application (`power-system` folder)
+
+#### Battery and power sense
 
 ![Olimex schematic for GPIO 3 and 4](./olimex_battery_and_power_sense.png "Battery (GPIO 3) and power Sense (GPIO4) GPIOs")
 
-## Onboard-computer (`onboard-computer` folder)
+### Onboard-computer (`onboard-computer` folder)
 
-### Peripherals
+#### Peripherals
 
 | Peripheral               | Part number                              | Crate                      | Address |
 | ------------------------ | ---------------------------------------- | -------------------------- | ------- |
@@ -30,9 +42,11 @@ Start with the [`power-system`]:
 
 Continue with the next exercises in the `onboard-computer`
 
-4. Receive battery percentage over UART from the `power-system`
-5. GNSS receiver - parse NMEA 0183 sentences
+4. Receive battery percentage over UART from the `power-system` - [`onboard_computer::application::run_uart`][run_uart]
+5. GNSS receiver - parse NMEA 0183 sentences - [`onboard_computer::application::run_gnss`][run_gnss]
 
+[run_uart]: todo
+[run_gnss]: todo
 
 ## Future ideas you can develop
 In no particular order:

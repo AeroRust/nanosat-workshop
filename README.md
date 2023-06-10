@@ -1,10 +1,13 @@
-# ESP32-C3 embedded workshop
+# Nanosat embedded workshop
 ## using Embassy, written in Rust
 
 
-### To setup your environment
+### Getting started
 
-Follow the [book](./docs/SUMMARY.md) (Markdown) or run the included [mdbook (Installation)][mdbook-install] book:
+To setup your environment and learn about the exercises follow the book:
+- on https://aerorust.github.io/nanosat-workshop/
+- [Markdown](./docs/SUMMARY.md)
+- run the included [mdbook (Installation)][mdbook-install] book:
 
 [mdbook-install]: https://rust-lang.github.io/mdBook/guide/installation.html
 
@@ -22,11 +25,15 @@ Use your browser to open [http://localhost:3000](http://localhost:3000)
 
 
 #### Install `espflash`
+
 ```
-cargo install espflash --rev 60224d1 --git https://github.com/esp-rs/espflash
+cargo install espflash@2.0.0-rc.4
 ```
 
-#### `cargo run`
+#### Use `cargo run`
+
+- For `power-system` application (Olimex board) `cargo run -p power-system`
+- For `onboard-computer` application (Espressif Rust board) `cargo run -p onboard-computer`
 
 
 ### Pinout and schematics
