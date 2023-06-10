@@ -34,6 +34,7 @@ pub struct Application {
 }
 
 impl Application {
+    /// Initialises all the peripherals which the [`Application`] will use.
     pub fn init(peripherals: Peripherals) -> Self {
         let system: SystemParts = peripherals.SYSTEM.split();
         let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
