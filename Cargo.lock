@@ -72,6 +72,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "atomic-waker"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1181e1e0d1fce796a03db1ae795d67167da795f9cf4a39c37589e85ef57f26d3"
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -300,7 +306,7 @@ dependencies = [
  "embassy-net-driver",
  "embassy-sync 0.2.0 (git+https://github.com/embassy-rs/embassy?rev=fb27594)",
  "embassy-time 0.1.1 (git+https://github.com/embassy-rs/embassy?rev=fb27594)",
- "embedded-io 0.4.0",
+ "embedded-io",
  "embedded-nal-async",
  "futures",
  "generic-array 0.14.7",
@@ -327,7 +333,7 @@ dependencies = [
  "cfg-if",
  "critical-section",
  "defmt",
- "embedded-io 0.4.0",
+ "embedded-io",
  "futures-util",
  "heapless",
 ]
@@ -339,7 +345,7 @@ source = "git+https://github.com/embassy-rs/embassy?rev=fb27594#fb27594b2eb2cca2
 dependencies = [
  "cfg-if",
  "critical-section",
- "embedded-io 0.4.0",
+ "embedded-io",
  "futures-util",
  "heapless",
 ]
@@ -427,12 +433,6 @@ dependencies = [
 
 [[package]]
 name = "embedded-io"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33dfba9e6c113f2fd8537c943780a7345945e66c86972e356b1152e19481bcf5"
-
-[[package]]
-name = "embedded-io"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef1a6892d9eef45c8fa6b9e0086428a2cca8491aca8f787c534a3d6d0bcb3ced"
@@ -454,7 +454,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "27ce84f518ca912777ec143db235f4d615e3bf8d4e46d507d6ef12daf5b1df98"
 dependencies = [
- "embedded-io 0.4.0",
+ "embedded-io",
  "embedded-nal",
  "heapless",
  "no-std-net 0.6.0",
@@ -462,12 +462,13 @@ dependencies = [
 
 [[package]]
 name = "embedded-svc"
-version = "0.24.0"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2079f8182848872fb6e8eed2c1ba3aea409fc71984a9e8090733c08c404e7864"
+checksum = "c4b70d70bd45c40027ed1c997ec3fb63ffb7237d5b2ad7b7da89adf0c3b93c71"
 dependencies = [
+ "atomic-waker",
  "defmt",
- "embedded-io 0.3.1",
+ "embedded-io",
  "enumset",
  "heapless",
  "no-std-net 0.5.0",
@@ -506,8 +507,9 @@ dependencies = [
 
 [[package]]
 name = "esp-hal-common"
-version = "0.8.0"
-source = "git+https://github.com/esp-rs/esp-hal?rev=5c5d7f9#5c5d7f9876e2716b59b7814f9d06f731e54c8754"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d077ffedaa2632004cf73e713438a18706d6d04d2fb0632ffe5a5f02bb9c17e0"
 dependencies = [
  "basic-toml",
  "bitflags 2.2.1",
@@ -515,7 +517,7 @@ dependencies = [
  "critical-section",
  "embedded-dma",
  "embedded-hal 0.2.7",
- "esp-hal-procmacros 0.5.0 (git+https://github.com/esp-rs/esp-hal?rev=5c5d7f9)",
+ "esp-hal-procmacros 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "esp-riscv-rt",
  "esp32c3",
  "fugit",
@@ -530,8 +532,7 @@ dependencies = [
 [[package]]
 name = "esp-hal-common"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d077ffedaa2632004cf73e713438a18706d6d04d2fb0632ffe5a5f02bb9c17e0"
+source = "git+https://github.com/esp-rs/esp-hal?rev=2645c4e#2645c4e3e6026e3fb4079929e55728be67815a27"
 dependencies = [
  "basic-toml",
  "bitflags 2.2.1",
@@ -546,10 +547,11 @@ dependencies = [
  "embedded-hal 1.0.0-alpha.10",
  "embedded-hal-async",
  "embedded-hal-nb",
- "esp-hal-procmacros 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "esp-hal-procmacros 0.5.0 (git+https://github.com/esp-rs/esp-hal?rev=2645c4e)",
  "esp-riscv-rt",
  "esp32c3",
  "fugit",
+ "log",
  "nb 1.1.0",
  "paste",
  "riscv-atomic-emulation-trap",
@@ -575,7 +577,7 @@ dependencies = [
 [[package]]
 name = "esp-hal-procmacros"
 version = "0.5.0"
-source = "git+https://github.com/esp-rs/esp-hal?rev=5c5d7f9#5c5d7f9876e2716b59b7814f9d06f731e54c8754"
+source = "git+https://github.com/esp-rs/esp-hal?rev=2645c4e#2645c4e3e6026e3fb4079929e55728be67815a27"
 dependencies = [
  "darling 0.14.4",
  "proc-macro-crate",
@@ -607,7 +609,7 @@ dependencies = [
 [[package]]
 name = "esp-wifi"
 version = "0.1.0"
-source = "git+https://github.com/esp-rs/esp-wifi?rev=e5a1cf8#e5a1cf83ac0eaf52acb5aa066aa8bc8307df1086"
+source = "git+https://github.com/esp-rs/esp-wifi?rev=e4cc052#e4cc052385b9ff4e9eee536be5c09f084b7990db"
 dependencies = [
  "atomic-polyfill 1.0.2",
  "critical-section",
@@ -616,13 +618,13 @@ dependencies = [
  "embassy-net-driver",
  "embassy-sync 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "embedded-hal 0.2.7",
- "embedded-io 0.4.0",
+ "embedded-io",
  "embedded-svc",
  "enumset",
- "esp-hal-common 0.8.0",
+ "esp-hal-common 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "esp-wifi-sys",
  "esp32c3",
- "esp32c3-hal 0.8.0",
+ "esp32c3-hal",
  "fugit",
  "heapless",
  "linked_list_allocator",
@@ -635,7 +637,7 @@ dependencies = [
 [[package]]
 name = "esp-wifi-sys"
 version = "0.1.0"
-source = "git+https://github.com/esp-rs/esp-wifi?rev=e5a1cf8#e5a1cf83ac0eaf52acb5aa066aa8bc8307df1086"
+source = "git+https://github.com/esp-rs/esp-wifi?rev=e4cc052#e4cc052385b9ff4e9eee536be5c09f084b7990db"
 dependencies = [
  "anyhow",
 ]
@@ -652,19 +654,8 @@ dependencies = [
 
 [[package]]
 name = "esp32c3-hal"
-version = "0.8.0"
-source = "git+https://github.com/esp-rs/esp-hal?rev=5c5d7f9#5c5d7f9876e2716b59b7814f9d06f731e54c8754"
-dependencies = [
- "cfg-if",
- "embedded-hal 0.2.7",
- "esp-hal-common 0.8.0",
-]
-
-[[package]]
-name = "esp32c3-hal"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb3469727f70c746eb2ad046f86e5f9e1f4b352d4976c16d1a3e58c0a6cac7e4"
+source = "git+https://github.com/esp-rs/esp-hal?rev=2645c4e#2645c4e3e6026e3fb4079929e55728be67815a27"
 dependencies = [
  "cfg-if",
  "embassy-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -673,7 +664,7 @@ dependencies = [
  "embedded-hal 1.0.0-alpha.10",
  "embedded-hal-async",
  "embedded-hal-nb",
- "esp-hal-common 0.9.0",
+ "esp-hal-common 0.9.0 (git+https://github.com/esp-rs/esp-hal?rev=2645c4e)",
 ]
 
 [[package]]
@@ -996,7 +987,7 @@ dependencies = [
  "esp-backtrace",
  "esp-println",
  "esp-wifi",
- "esp32c3-hal 0.9.0",
+ "esp32c3-hal",
  "fugit",
  "heapless",
  "nb 1.1.0",
@@ -1050,7 +1041,7 @@ dependencies = [
  "esp-backtrace",
  "esp-println",
  "esp-wifi",
- "esp32c3-hal 0.9.0",
+ "esp32c3-hal",
  "fugit",
  "heapless",
  "nb 1.1.0",
