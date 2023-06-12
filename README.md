@@ -7,7 +7,7 @@
 To setup your environment and learn about the exercises follow the book.
 You can access the book in a few ways:
 
-- On https://aerorust.github.io/nanosat-workshop/
+- On https://aerorust.org/nanosat-workshop/
 - Using the [Markdown](./docs/SUMMARY.md) (links pointing to the documentation of items in the project will not work)
 - Run the included `mdbook` [(Installation)][mdbook-install] book:
 
@@ -50,9 +50,9 @@ cargo install espflash@2.0.0-rc.4
 
 ##### Olimex's ESP32-C3 dev board:
 
-https://raw.githubusercontent.com/OLIMEX/ESP32-C3-DevKit-Lipo/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf
+PDF: https://raw.githubusercontent.com/OLIMEX/ESP32-C3-DevKit-Lipo/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf
 
-https://github.com/OLIMEX/ESP32-C3-DevKit-Lipo/raw/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf
+Repository PDF file: https://github.com/OLIMEX/ESP32-C3-DevKit-Lipo/raw/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf
 
 
 ##### Espressif's ESP32-C3-DevKit-RUST-1
@@ -75,4 +75,5 @@ This will save all caught data in a file called `uart_debug.cap`.
 
 
 ## License
+
 MIT or APACHE-2.0

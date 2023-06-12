@@ -14,23 +14,23 @@ use hal::{
     prelude::*,
     system::SystemParts,
     timer::TimerGroup,
-    uart::{
-        TxRxPins,
-    },
+    uart::TxRxPins,
     Priority, Rtc, Uart, IO,
 };
 
-use core::{
-    fmt::Write,
-    sync::atomic::{AtomicU8},
-    writeln,
-};
+use core::{fmt::Write, sync::atomic::AtomicU8, writeln};
 
+/// # Exercise: Send Battery percentage over UART to the `onboard-computer`
+///
+/// Use an [`AtomicU8`] to store the percentage of the battery and later send it over UART.
+///
+/// `pub static BATTERY: ... = todo!("Use AtomicU8");`
 pub static BATTERY: AtomicU8 = AtomicU8::new(0);
 
 /// # Exercise: Flashing Onboard LED
 ///
 /// Read docs: <https://docs.rs/esp32-hal/latest/esp32_hal/gpio/index.html>
+///
 /// Check out the Blinky example: <https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/blinky.rs>
 ///
 /// Check out Olimex schematic, for pins and other board features: <https://raw.githubusercontent.com/OLIMEX/ESP32-C3-DevKit-Lipo/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf>
@@ -41,19 +41,25 @@ pub static BATTERY: AtomicU8 = AtomicU8::new(0);
 ///
 ///
 ///
-/// `pub type OnboardLed = todo!("");`
+/// `pub type OnboardLed = todo!("Onboard Led type - Push/Pull Output pin on GPIO 8");`
 pub type OnboardLed = Gpio8<Output<PushPull>>;
 
 /// # Exercise: Battery measurement with ADC
 ///
 /// - GPIO 3 docs: <https://docs.rs/esp32c3-hal/latest/esp32c3_hal/gpio/type.Gpio3.html>
 /// - ADC example: <https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/adc.rs>
+///
+/// pub type BatteryMeasurementPin = todo!();
 pub type BatteryMeasurementPin = AdcPin<Gpio3<Analog>, ADC1>;
 
 pub struct Application {
+    // TODO: Uncomment when you create an `ADC` instance of the `ADC1` peripheral
     adc: ADC<'static, ADC1>,
+    // TODO: Uncomment when you create a `Uart` instance of the `UART1` peripheral
     uart: Uart<'static, UART1>,
+    // TODO: Uncomment when you create the `OnboardLed` instance
     onboard_led: OnboardLed,
+    // TODO: Uncomment when you create the `AdcPin` instance
     battery_measurement_pin: BatteryMeasurementPin,
 }
 
@@ -175,7 +181,6 @@ impl Application {
         }
     }
 
-
     /// Runs the application by spawning each of the [`Application`]'s tasks
     pub fn run(self, executor: &'static mut Executor) -> ! {
         executor.run(|spawner| {
@@ -189,7 +194,7 @@ impl Application {
     }
 }
 
-// UART Transmit Communication Task
+/// # Exercise: Send Battery percentage over UART to the `onboard-computer`
 #[embassy_executor::task]
 async fn run_uart(mut uart: Uart<'static, UART1>) {
     // This communication task will be executed every 1 second
@@ -210,7 +215,7 @@ async fn run_uart(mut uart: Uart<'static, UART1>) {
     }
 }
 
-// ADC Measurement Task
+/// # Exercise: Battery measurement with ADC
 #[embassy_executor::task]
 async fn run_battery_measurement_adc(
     mut adc_1: ADC<'static, ADC1>,
@@ -262,7 +267,7 @@ async fn run_battery_measurement_adc(
     }
 }
 
-// LED Blinking Task
+/// # Exercise: Flashing Onboard LED
 #[embassy_executor::task]
 async fn run_blinky(mut led: OnboardLed) {
     // LED Blinking Code goes here
