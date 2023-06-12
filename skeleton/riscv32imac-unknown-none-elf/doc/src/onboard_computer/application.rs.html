@@ -174,6 +174,8 @@
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
 <a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
 </pre><pre class="rust"><code><span class="kw">use </span>embassy_executor::Executor;
 <span class="kw">use </span>embassy_time::{Duration, Timer};
 <span class="kw">use </span>esp_println::println;
@@ -241,7 +243,8 @@
         <span class="comment">// Onboard LED
         // Rust ESP32-C3 schematics: https://raw.githubusercontent.com/esp-rs/esp-rust-board/master/assets/rust_board_v1_pin-layout.png
         // Set GPIO7 as an output, and set its state high initially.
-        </span><span class="kw">let </span>onboard_led = io.pins.gpio7.into_push_pull_output();
+        </span><span class="kw">let </span><span class="kw-2">mut </span>onboard_led = io.pins.gpio7.into_push_pull_output();
+        onboard_led.set_high().unwrap();
 
         <span class="comment">// Setup Random Generator for GNSS Reading
         // Hal example: https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/rng.rs
@@ -275,8 +278,8 @@
     <span class="doccomment">/// Runs the application by spawning each of the [`Application`]&#39;s tasks
     </span><span class="kw">pub fn </span>run(<span class="self">self</span>, executor: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>Executor) -&gt; ! {
         executor.run(|spawner| {
-            spawner.must_spawn(run_uart(<span class="self">self</span>.uart));
-            spawner.must_spawn(run_gnss(<span class="self">self</span>.rng));
+            <span class="comment">// spawner.must_spawn(run_uart(self.uart));
+            </span>spawner.must_spawn(run_gnss(<span class="self">self</span>.rng));
         })
     }
 }
@@ -287,7 +290,7 @@
 /// The task picks random sentences from a log file and looks out for `GNS` and `GSV` messages
 ///
 ///
-/// Print the number of satellites from the GNS sentence and the satellites in view from the GSV sentence
+/// Print the ID&#39;s of satellites used for fix in GSA sentence and the satellites in view from the GSV sentence
 ///
 /// `nmea` crate docs: &lt;https://docs.rs/nmea&gt;
 ///
@@ -299,7 +302,7 @@
 /// 1. Use the `nmea` crate to parse the sentences
 /// 2. Print the parsing result (for debugging purposes) using `esp_println::println!()`
 /// 3. Use a match on the result and handle the cases:
-/// - GNS - print &quot;Number of satellites: {x}&quot; field
+/// - GSA - print &quot;The IDs of satellites used for fix: {x:?}&quot; field
 /// - GSV - print &quot;Satellites in View: {x}&quot; field
 /// 4. Repeat this processes every 2 seconds.
 </span><span class="attr">#[embassy_executor::task]
@@ -308,18 +311,19 @@
         <span class="kw">let </span>num = rng.random() <span class="kw">as </span>u8;
         <span class="kw">let </span>sentence = MOCK_SENTENCES.lines().nth(num <span class="kw">as </span>usize).unwrap();
 
-        <span class="comment">// 1. Use the `nmea` crate to parse the sentences
+        <span class="comment">// println!(&quot;(debug) NMEA sentence at line: {num}: {sentence}&quot;);
+        // 1. Use the `nmea` crate to parse the sentences
         // TODO: Uncomment line and finish the `todo!()`
         // let parse_result = todo!(&quot;call nmea::parse_str&quot;);
         </span><span class="kw">let </span>parse_result = nmea::parse_str(sentence);
         <span class="comment">// 2. Print the parsing result (for debugging purposes) using `esp_println::println!()`
-        </span><span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, parse_result);
-        <span class="comment">// 3. Use a match on the result and handle the sentences:
-        // - GNS
+        // println!(&quot;{:?}&quot;, parse_result);
+        // 3. Use a match on the result and handle the sentences:
+        // - GSA
         // - GSV
         </span><span class="kw">match </span>parse_result {
-            <span class="prelude-val">Ok</span>(ParseResult::GNS(gns_data)) =&gt; {
-                <span class="macro">println!</span>(<span class="string">&quot;GNS: Number of satellites: {}&quot;</span>, gns_data.nsattelites);
+            <span class="prelude-val">Ok</span>(ParseResult::GSA(gsa_data)) =&gt; {
+                <span class="macro">println!</span>(<span class="string">&quot;GSA: Fix satellites: {:?}&quot;</span>, gsa_data.fix_sats_prn);
             }
             <span class="prelude-val">Ok</span>(ParseResult::GSV(gsv_data)) =&gt; {
                 <span class="macro">println!</span>(<span class="string">&quot;GSV: Satellites in view: {}&quot;</span>, gsv_data._sats_in_view);
