@@ -4,33 +4,42 @@
 
 ### Getting started
 
-To setup your environment and learn about the exercises follow the book:
-- on https://aerorust.github.io/nanosat-workshop/
-- [Markdown](./docs/SUMMARY.md)
-- run the included [mdbook (Installation)][mdbook-install] book:
+To setup your environment and learn about the exercises follow the book.
+You can access the book in a few ways:
+
+- On https://aerorust.github.io/nanosat-workshop/
+- Using the [Markdown](./docs/SUMMARY.md) (links pointing to the documentation of items in the project will not work)
+- Run the included `mdbook` [(Installation)][mdbook-install] book:
 
 [mdbook-install]: https://rust-lang.github.io/mdBook/guide/installation.html
 
+1. Clone the repo
 ```
 git clone git@github.com:LechevSpace/nanosat-workshop.git && \ 
-cd nanosat-workshop && \
-mdbook serve
+cd nanosat-workshop
 ```
 
 **NB:** Using `git@github.com:LechevSpace/nanosat-workshop.git` requires SSH key set up on Github.
 
-Use your browser to open [http://localhost:3000](http://localhost:3000)
+2. Build the docs of the applications
+
+`cargo +nightly website-docs`
+
+3. Start the local book server
+`mdbook serve`
+
+
+1. Use your browser to open http://localhost:3000
 
 ### How to flash
 
-
-#### Install `espflash`
+#### 1. Install `espflash`
 
 ```
 cargo install espflash@2.0.0-rc.4
 ```
 
-#### Use `cargo run`
+#### 2. Use `cargo run`
 
 - For `power-system` application (Olimex board) `cargo run -p power-system`
 - For `onboard-computer` application (Espressif Rust board) `cargo run -p onboard-computer`

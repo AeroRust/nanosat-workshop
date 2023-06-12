@@ -40,6 +40,7 @@ rustflags = [
   "--cfg",
   'target_has_atomic="ptr"',
 ]
+rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
 
 target = "riscv32imac-unknown-none-elf"
 
@@ -50,3 +51,5 @@ build-std = ["alloc", "core"]
 rb = "run --target riscv32imac-unknown-none-elf --bin"
 rrb = "run --target riscv32imac-unknown-none-elf --release --bin"
 t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
+
+website-docs = "doc --no-deps --workspace --target-dir ./docs/skeleton --document-private-items"

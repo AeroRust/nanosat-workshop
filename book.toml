@@ -1,3 +1,7 @@
+# https://rust-lang.github.io/mdBook/format/configuration/general.html#build-options
+[build]
+build-dir = "website"
+extra-watch-dirs = ["docs/skeleton"]
 [book]
 authors = ["Lachezar Lechev"]
 language = "en"
@@ -8,3 +12,9 @@ title = "Nanosatellite embedded workshop"
 [output.html]
 theme = "./docs/theme"
 input-404 = "Not_found.md"
+
+git-repository-url = "https://github.com/AeroRust/nanosat-workshop"
+
+[output.html.print]
+enable = true    # include support for printable output
+page-break = true # insert page-break after each chapter

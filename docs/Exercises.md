@@ -4,11 +4,18 @@ Both applications are structured in the following way to allow you to follow the
 - `Application::init` - initialise any peripheral that will be used for the `Application`
   - [`power_system::Application::init`][power-system-application-init]
   - [`onboard_computer::Application::init`][onboard-computer-application-init]
+
+[power-system-application-init]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/struct.Application.html#method.init
+[onboard-computer-application-init]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/struct.Application.html#method.init
+
+- `Application:run` - spawns all tasks on the embassy executor needed for our `Application`.
+  - [`power_system::Application::run`][power-system-application-run]
+  - [`onboard_computer::Application::run`][onboard-computer-application-run]
   - `power_system::Application::init`
+- An embassy task `fn run_*(..)` for each exercise
 
-
-[power-system-application-init]: todo
-[onboard-computer-application-init]: todo
+[power-system-application-run]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/struct.Application.html#method.run
+[onboard-computer-application-run]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/struct.Application.html#method.run
 
 ### Power System Application (`power-system` folder)
 
