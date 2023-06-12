@@ -41,24 +41,31 @@ Both applications are structured in the following way to allow you to follow the
 
 ## Exercises
 
-Start with the [`power-system`]:
+Start with the [`power-system`][power-system]:
 
-1. Blinky for IO - use the Onboard LED and make it blink
-2. Battery measurement with ADC - measure and calculate the battery voltage and percentage
-3. Send Battery percentage over UART to the `onboard-computer`
+1. Flashing Onboard LED - a blinky example for IO - [`power_system::application::run_blinky`][ps-run_blinky]
+2. Battery measurement with ADC - measure and calculate the battery voltage and percentage - [`power_system::application::run_battery_measurement_adc`][ps-run_battery_measurement_adc]
+3. Send Battery percentage over UART to the `onboard-computer` - [`power_system::application::run_uart`][ps-run_uart]
 
-Continue with the next exercises in the `onboard-computer`
+[ps-run_blinky]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_blinky.html
+[ps-run_battery_measurement_adc]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_battery_measurement_adc.html
+[ps-run_uart]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_uart.html
 
-4. Receive battery percentage over UART from the `power-system` - [`onboard_computer::application::run_uart`][run_uart]
-5. GNSS receiver - parse NMEA 0183 sentences - [`onboard_computer::application::run_gnss`][run_gnss]
+Continue with the next exercises in the [`onboard-computer`][onboard-computer]:
 
-[run_uart]: todo
-[run_gnss]: todo
+1. Receive battery percentage over UART from the `power-system` - [`onboard_computer::application::run_uart`][obc-run_uart]
+2. GNSS receiver - parse NMEA 0183 sentences - [`onboard_computer::application::run_gnss`][obc-run_gnss]
+
+[power-system]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/index.html
+[onboard-computer]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/index.html
+[obc-run_uart]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/fn.run_uart.html
+[obc-run_gnss]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/fn.run_gnss.html
 
 ## Future ideas you can develop
 In no particular order:
 
 - Power sense (`power-system` application)
+
     By soldering the jumper for `GPIO 4` you can measure the voltage of the +5V Power in line.
     This allows you to know whether or not an external +5V has been provided (both from USB-C or other), that will
     charge the battery.
