@@ -1,0 +1,3 @@
+cargo:rustc-link-search=/home/runner/work/nanosat-workshop/nanosat-workshop/./docs/skeleton/riscv32imac-unknown-none-elf/debug/build/esp32c3-hal-bb68b0e74556919f/out
+cargo:rerun-if-changed=ld/memory.x
+cargo:rustc-link-search=/home/runner/work/nanosat-workshop/nanosat-workshop/./docs/skeleton/riscv32imac-unknown-none-elf/debug/build/esp32c3-hal-bb68b0e74556919f/out

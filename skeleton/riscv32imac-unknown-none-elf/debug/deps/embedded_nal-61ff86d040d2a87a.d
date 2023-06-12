@@ -1,0 +1,10 @@
+/home/runner/work/nanosat-workshop/nanosat-workshop/./docs/skeleton/riscv32imac-unknown-none-elf/debug/deps/embedded_nal-61ff86d040d2a87a.rmeta: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/dns.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/mod.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/share.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/tcp.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/udp.rs
+
+/home/runner/work/nanosat-workshop/nanosat-workshop/./docs/skeleton/riscv32imac-unknown-none-elf/debug/deps/embedded_nal-61ff86d040d2a87a.d: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/dns.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/mod.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/share.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/tcp.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/udp.rs
+
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/lib.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/dns.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/mod.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/share.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/tcp.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/embedded-nal-0.6.0/src/stack/udp.rs:

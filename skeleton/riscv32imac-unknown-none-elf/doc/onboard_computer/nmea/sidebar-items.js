@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"opaque":[""],"static":["MOCK_SENTENCES"],"struct":["NmeaReceiver"]};

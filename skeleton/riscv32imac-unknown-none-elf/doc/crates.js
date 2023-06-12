@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["onboard_computer","power_system"];

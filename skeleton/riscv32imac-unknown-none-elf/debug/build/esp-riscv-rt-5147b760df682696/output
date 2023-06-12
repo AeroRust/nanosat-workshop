@@ -1,0 +1,1 @@
+cargo:rustc-link-search=/home/runner/work/nanosat-workshop/nanosat-workshop/./docs/skeleton/riscv32imac-unknown-none-elf/debug/build/esp-riscv-rt-5147b760df682696/out

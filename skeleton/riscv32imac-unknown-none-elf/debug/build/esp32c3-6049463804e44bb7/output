@@ -1,0 +1,3 @@
+cargo:rustc-link-search=/home/runner/work/nanosat-workshop/nanosat-workshop/./docs/skeleton/riscv32imac-unknown-none-elf/debug/build/esp32c3-6049463804e44bb7/out
+cargo:rerun-if-changed=device.x
+cargo:rerun-if-changed=build.rs

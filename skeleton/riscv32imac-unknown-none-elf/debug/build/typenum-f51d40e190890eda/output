@@ -1,0 +1,3 @@
+cargo:rerun-if-changed=build/main.rs
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/runner/work/nanosat-workshop/nanosat-workshop/./docs/skeleton/riscv32imac-unknown-none-elf/debug/build/typenum-f51d40e190890eda/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_OP=/home/runner/work/nanosat-workshop/nanosat-workshop/./docs/skeleton/riscv32imac-unknown-none-elf/debug/build/typenum-f51d40e190890eda/out/op.rs
