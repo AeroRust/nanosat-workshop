@@ -22,29 +22,32 @@ use hal::{
 
 use core::{
     fmt::Write,
-    sync::atomic::{AtomicU8, Ordering},
+    sync::atomic::{AtomicU8},
     writeln,
 };
 
 pub static BATTERY: AtomicU8 = AtomicU8::new(0);
 
-/// Read docs: https://docs.rs/esp32-hal/latest/esp32_hal/gpio/index.html
-/// Check out the Blinky example: https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/blinky.rs
+/// # Exercise: Flashing Onboard LED
 ///
-/// Check out Olimex schematic, for pins and other board features: https://raw.githubusercontent.com/OLIMEX/ESP32-C3-DevKit-Lipo/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf
+/// Read docs: <https://docs.rs/esp32-hal/latest/esp32_hal/gpio/index.html>
+/// Check out the Blinky example: <https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/blinky.rs>
+///
+/// Check out Olimex schematic, for pins and other board features: <https://raw.githubusercontent.com/OLIMEX/ESP32-C3-DevKit-Lipo/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf>
 ///
 /// We want to create an Output of GPIO 8 which is the onboard led (check schematics above).
 ///
-/// GPIO 8 docs: https://docs.rs/esp32c3-hal/latest/esp32c3_hal/gpio/type.Gpio8.html
+/// GPIO 8 docs: <https://docs.rs/esp32c3-hal/latest/esp32c3_hal/gpio/type.Gpio8.html>
 ///
 ///
-/// # Exercise: Flashing Onboard LED
 ///
 /// `pub type OnboardLed = todo!("");`
 pub type OnboardLed = Gpio8<Output<PushPull>>;
 
-// GPIO 3 docs: https://docs.rs/esp32c3-hal/latest/esp32c3_hal/gpio/type.Gpio3.html
-/// ADC example: https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/adc.rs
+/// # Exercise: Battery measurement with ADC
+///
+/// - GPIO 3 docs: <https://docs.rs/esp32c3-hal/latest/esp32c3_hal/gpio/type.Gpio3.html>
+/// - ADC example: <https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/adc.rs>
 pub type BatteryMeasurementPin = AdcPin<Gpio3<Analog>, ADC1>;
 
 pub struct Application {

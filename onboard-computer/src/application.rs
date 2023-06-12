@@ -6,12 +6,11 @@ use hal::{
     embassy,
     gpio::{Gpio7, Output, PushPull},
     interrupt,
-    peripherals::{Interrupt, Peripherals, UART0, UART1},
+    peripherals::{Interrupt, Peripherals, UART1},
     prelude::*,
     system::SystemParts,
     timer::TimerGroup,
     uart::{
-        config::{Config, DataBits, Parity, StopBits},
         TxRxPins,
     },
     Priority, Rng, Rtc, Uart, IO,
@@ -126,6 +125,7 @@ impl Application {
 /// 3. Use a match on the result and handle the cases:
 /// - GNS - print "Number of satellites: {x}" field
 /// - GSV - print "Satellites in View: {x}" field
+/// 4. Repeat this processes every 2 seconds.
 #[embassy_executor::task]
 async fn run_gnss(mut rng: Rng<'static>) {
     loop {
@@ -154,7 +154,7 @@ async fn run_gnss(mut rng: Rng<'static>) {
     }
 }
 
-/// # Exercise: Send Battery percentage over UART
+/// # Exercise: Receive battery percentage over UART from the power-system
 ///
 /// 1. create an infinite loop that
 /// 2. tries to read the Battery Percentage value sent from the Power System,
@@ -165,7 +165,7 @@ async fn run_uart(mut uart: Uart<'static, UART1>) {
     loop {
         match nb::block!(uart.read()) {
             Ok(battery_percentage) => {
-                println!("Battery: {battery_percentage} %");
+                println!("Battery: {battery_percentage}%");
             }
             Err(err) => {
                 println!("Error: {err:?}")
