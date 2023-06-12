@@ -279,6 +279,11 @@
 <a href="#279" id="279">279</a>
 <a href="#280" id="280">280</a>
 <a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
 </pre><pre class="rust"><code><span class="kw">use </span>embassy_executor::Executor;
 
 <span class="kw">use </span>embassy_time::{Duration, Timer};
@@ -295,23 +300,23 @@
     prelude::<span class="kw-2">*</span>,
     system::SystemParts,
     timer::TimerGroup,
-    uart::{
-        TxRxPins,
-    },
+    uart::TxRxPins,
     Priority, Rtc, Uart, IO,
 };
 
-<span class="kw">use </span>core::{
-    fmt::Write,
-    sync::atomic::{AtomicU8},
-    writeln,
-};
+<span class="kw">use </span>core::{fmt::Write, sync::atomic::AtomicU8, writeln};
 
-<span class="kw">pub static </span>BATTERY: AtomicU8 = AtomicU8::new(<span class="number">0</span>);
+<span class="doccomment">/// # Exercise: Send Battery percentage over UART to the `onboard-computer`
+///
+/// Use an [`AtomicU8`] to store the percentage of the battery and later send it over UART.
+///
+/// `pub static BATTERY: ... = todo!(&quot;Use AtomicU8&quot;);`
+</span><span class="kw">pub static </span>BATTERY: AtomicU8 = AtomicU8::new(<span class="number">0</span>);
 
 <span class="doccomment">/// # Exercise: Flashing Onboard LED
 ///
 /// Read docs: &lt;https://docs.rs/esp32-hal/latest/esp32_hal/gpio/index.html&gt;
+///
 /// Check out the Blinky example: &lt;https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/blinky.rs&gt;
 ///
 /// Check out Olimex schematic, for pins and other board features: &lt;https://raw.githubusercontent.com/OLIMEX/ESP32-C3-DevKit-Lipo/main/HARDWARE/ESP32-C3-DevKit-Lipo_Rev_B/ESP32-C3-DevKit-Lipo_Rev_B.pdf&gt;
@@ -322,20 +327,26 @@
 ///
 ///
 ///
-/// `pub type OnboardLed = todo!(&quot;&quot;);`
+/// `pub type OnboardLed = todo!(&quot;Onboard Led type - Push/Pull Output pin on GPIO 8&quot;);`
 </span><span class="kw">pub type </span>OnboardLed = Gpio8&lt;Output&lt;PushPull&gt;&gt;;
 
 <span class="doccomment">/// # Exercise: Battery measurement with ADC
 ///
 /// - GPIO 3 docs: &lt;https://docs.rs/esp32c3-hal/latest/esp32c3_hal/gpio/type.Gpio3.html&gt;
 /// - ADC example: &lt;https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/adc.rs&gt;
+///
+/// pub type BatteryMeasurementPin = todo!();
 </span><span class="kw">pub type </span>BatteryMeasurementPin = AdcPin&lt;Gpio3&lt;Analog&gt;, ADC1&gt;;
 
 <span class="kw">pub struct </span>Application {
-    adc: ADC&lt;<span class="lifetime">&#39;static</span>, ADC1&gt;,
-    uart: Uart&lt;<span class="lifetime">&#39;static</span>, UART1&gt;,
-    onboard_led: OnboardLed,
-    battery_measurement_pin: BatteryMeasurementPin,
+    <span class="comment">// TODO: Uncomment when you create an `ADC` instance of the `ADC1` peripheral
+    </span>adc: ADC&lt;<span class="lifetime">&#39;static</span>, ADC1&gt;,
+    <span class="comment">// TODO: Uncomment when you create a `Uart` instance of the `UART1` peripheral
+    </span>uart: Uart&lt;<span class="lifetime">&#39;static</span>, UART1&gt;,
+    <span class="comment">// TODO: Uncomment when you create the `OnboardLed` instance
+    </span>onboard_led: OnboardLed,
+    <span class="comment">// TODO: Uncomment when you create the `AdcPin` instance
+    </span>battery_measurement_pin: BatteryMeasurementPin,
 }
 
 <span class="kw">impl </span>Application {
@@ -456,7 +467,6 @@
         }
     }
 
-
     <span class="doccomment">/// Runs the application by spawning each of the [`Application`]&#39;s tasks
     </span><span class="kw">pub fn </span>run(<span class="self">self</span>, executor: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>Executor) -&gt; ! {
         executor.run(|spawner| {
@@ -470,7 +480,7 @@
     }
 }
 
-<span class="comment">// UART Transmit Communication Task
+<span class="doccomment">/// # Exercise: Send Battery percentage over UART to the `onboard-computer`
 </span><span class="attr">#[embassy_executor::task]
 </span><span class="kw">async fn </span>run_uart(<span class="kw-2">mut </span>uart: Uart&lt;<span class="lifetime">&#39;static</span>, UART1&gt;) {
     <span class="comment">// This communication task will be executed every 1 second
@@ -491,7 +501,7 @@
     }
 }
 
-<span class="comment">// ADC Measurement Task
+<span class="doccomment">/// # Exercise: Battery measurement with ADC
 </span><span class="attr">#[embassy_executor::task]
 </span><span class="kw">async fn </span>run_battery_measurement_adc(
     <span class="kw-2">mut </span>adc_1: ADC&lt;<span class="lifetime">&#39;static</span>, ADC1&gt;,
@@ -543,7 +553,7 @@
     }
 }
 
-<span class="comment">// LED Blinking Task
+<span class="doccomment">/// # Exercise: Flashing Onboard LED
 </span><span class="attr">#[embassy_executor::task]
 </span><span class="kw">async fn </span>run_blinky(<span class="kw-2">mut </span>led: OnboardLed) {
     <span class="comment">// LED Blinking Code goes here
