@@ -1,5 +1,5 @@
 [toolchain]
-# channel = "nightly"
 # Embassy uses this nightly.
 # Rust nightly for rev. `3e730aa`
+# KEEP UP TO DATE with the `website` workflow!
 channel = "nightly-2023-02-18"
