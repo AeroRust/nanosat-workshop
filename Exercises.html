@@ -176,28 +176,34 @@
 </tbody></table>
 </div>
 <h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
-<p>Start with the [<code>power-system</code>]:</p>
+<p>Start with the <a href="./skeleton/riscv32imac-unknown-none-elf/doc/power_system/index.html"><code>power-system</code></a>:</p>
 <ol>
-<li>Blinky for IO - use the Onboard LED and make it blink</li>
-<li>Battery measurement with ADC - measure and calculate the battery voltage and percentage</li>
-<li>Send Battery percentage over UART to the <code>onboard-computer</code></li>
+<li>Flashing Onboard LED - a blinky example for IO - <a href="./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_blinky.html"><code>power_system::application::run_blinky</code></a></li>
+<li>Battery measurement with ADC - measure and calculate the battery voltage and percentage - <a href="./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_battery_measurement_adc.html"><code>power_system::application::run_battery_measurement_adc</code></a></li>
+<li>Send Battery percentage over UART to the <code>onboard-computer</code> - <a href="./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_uart.html"><code>power_system::application::run_uart</code></a></li>
 </ol>
-<p>Continue with the next exercises in the <code>onboard-computer</code></p>
-<ol start="4">
-<li>Receive battery percentage over UART from the <code>power-system</code> - <a href="todo"><code>onboard_computer::application::run_uart</code></a></li>
-<li>GNSS receiver - parse NMEA 0183 sentences - <a href="todo"><code>onboard_computer::application::run_gnss</code></a></li>
+<p>Continue with the next exercises in the <a href="./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/index.html"><code>onboard-computer</code></a>:</p>
+<ol>
+<li>Receive battery percentage over UART from the <code>power-system</code> - <a href="./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/fn.run_uart.html"><code>onboard_computer::application::run_uart</code></a></li>
+<li>GNSS receiver - parse NMEA 0183 sentences - <a href="./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/fn.run_gnss.html"><code>onboard_computer::application::run_gnss</code></a></li>
 </ol>
 <h2 id="future-ideas-you-can-develop"><a class="header" href="#future-ideas-you-can-develop">Future ideas you can develop</a></h2>
 <p>In no particular order:</p>
 <ul>
-<li>Power sense (<code>power-system</code> application)
-By soldering the jumper for <code>GPIO 4</code> you can measure the voltage of the +5V Power in line.
+<li>
+<p>Power sense (<code>power-system</code> application)</p>
+<p>By soldering the jumper for <code>GPIO 4</code> you can measure the voltage of the +5V Power in line.
 This allows you to know whether or not an external +5V has been provided (both from USB-C or other), that will
 charge the battery.
-Implement another status for the battery which is Charging/External power.</li>
-<li>IMU (<code>onboard-computer</code> application)
-Using the <strong>I2C</strong> peripheral and the included IMU sensor on the <code>onboard-computer</code>, take readings of the </li>
-<li>Humidity and Temperature sensor (<code>onboard-computer</code> application)</li>
+Implement another status for the battery which is Charging/External power.</p>
+</li>
+<li>
+<p>IMU (<code>onboard-computer</code> application)
+Using the <strong>I2C</strong> peripheral and the included IMU sensor on the <code>onboard-computer</code>, take readings of the </p>
+</li>
+<li>
+<p>Humidity and Temperature sensor (<code>onboard-computer</code> application)</p>
+</li>
 </ul>
 
                     </main>
