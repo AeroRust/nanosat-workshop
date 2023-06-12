@@ -3,5 +3,5 @@
 
 pub use application::Application;
 
-mod application;
+pub mod application;
 pub mod nmea;
