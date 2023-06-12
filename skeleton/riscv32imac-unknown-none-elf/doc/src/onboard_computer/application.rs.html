@@ -278,8 +278,8 @@
     <span class="doccomment">/// Runs the application by spawning each of the [`Application`]&#39;s tasks
     </span><span class="kw">pub fn </span>run(<span class="self">self</span>, executor: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>Executor) -&gt; ! {
         executor.run(|spawner| {
-            <span class="comment">// spawner.must_spawn(run_uart(self.uart));
-            </span>spawner.must_spawn(run_gnss(<span class="self">self</span>.rng));
+            spawner.must_spawn(run_uart(<span class="self">self</span>.uart));
+            spawner.must_spawn(run_gnss(<span class="self">self</span>.rng));
         })
     }
 }
