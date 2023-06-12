@@ -145,7 +145,8 @@
 
                 <div id="content" class="content">
                     <main>
-                        <p><img src="System_Block_Diagram.jpg" alt="System block diagram" /></p>
+                        <h1 id="system-overview"><a class="header" href="#system-overview">System overview</a></h1>
+<p><img src="System_Block_Diagram.jpg" alt="System block diagram" /></p>
 <p>2 solar panels connected to solar charging board CN 3791 which is connected to system (VCC &amp; GND) to <a href="https://www.olimex.com/Products/IoT/ESP32-C3/ESP32-C3-DevKit-Lipo/">Olimex ESP32-C3 (rev. 1)</a> and the <a href="https://github.com/esp-rs/esp-rust-board/tree/v1.2">ESP32-C3 Rust dev kit (tag v1.2)</a> by <a href="https://www.espressif.com/en/products/devkits">Espressif</a></p>
 <p>The output for the battery on the solar charger is connected a switch to disconnect power going towards the battery and then connected to a <a href="https://www.olimex.com/Products/Power/Lipo-battery/BATTERY-LIPO250mAh/">LiPo 3.7V battery of 250 mAh</a> (<a href="https://www.olimex.com/Products/Power/Lipo-battery/BATTERY-LIPO250mAh/resources/JA602025P-Spec-Data-Sheet-3.7V-250mAh--170116.pdf">Datasheet</a>).</p>
 <p>On the connection to the battery, there's also a pin for ADC to the Olimex board for taking measurements of the battery. This allows us to read the battery percentage without charging it through the solar charger or USB (e.g. when we're programming the board).</p>
@@ -159,6 +160,53 @@ Operating temperature: at charge 0-55C, at discharge -25C+60C
 Capacity loss after 500 cycles full charge/discharge at 20C: 20%
 Dimensions 27x21x5mm
 </code></pre>
+<h2 id="bill-of-materials-bom"><a class="header" href="#bill-of-materials-bom">Bill of materials (BOM)</a></h2>
+<p><img src="BOM.jpg" alt="Bill of materials (picture)" /></p>
+<h3 id="components"><a class="header" href="#components">Components</a></h3>
+<ul>
+<li>
+<p>1 x Olimex board (<code>ESP32-C3-DevKit-Lipo</code>): https://www.olimex.com/Products/IoT/ESP32-C3/ESP32-C3-DevKit-Lipo/</p>
+</li>
+<li>
+<p>1 x Espressif Rust board (ESP32-C3): https://www.espressif.com/en/products/devkits (<code>ESP32-C3-DevKit-RUST-1</code>)</p>
+</li>
+<li>
+<p>LiPo Battery - 250 mAh or larger (3.0V cut-off, 3.7V nominal and 4.2V max, with overcharge and over-current protection)</p>
+</li>
+<li>
+<p>2 x Breadboards (Dimensions 82x52x10mm, Power supply bus on top and bottom, Grid on 0.1&quot; step)</p>
+</li>
+<li>
+<p>2 x solar panels (80x80 mm, 6V) with JST-PH 2.0 male connectors (separately soldered)</p>
+</li>
+<li>
+<p>1 x solar charger (CN3791 with 2 solar panel connectors JST-PH 2.0)</p>
+<ul>
+<li>Includes 2 cables JST-PH 2.0 (male) on both sides</li>
+</ul>
+</li>
+<li>
+<p>2 x JST-PH to 2 pin header connectors for breadboarding</p>
+</li>
+<li>
+<p>2 x resistors (470k Ohms, 1%) - used for the Voltage divider which we use to measure the battery</p>
+</li>
+<li>
+<p>3 x male to male jumper cables - 2 for UART (RX &amp; TX) and 1 for ADC.</p>
+</li>
+<li>
+<p>2 x male to female jumper cables - for powering the Espressif board (BAT+ &amp; GND pins) from the solar charger</p>
+</li>
+<li>
+<p>USB-C to USB-B / USB-C to USB-C cable for programming (depends on your development machine)</p>
+</li>
+</ul>
+<h2 id="frame"><a class="header" href="#frame">Frame</a></h2>
+<ul>
+<li>5 x M3 L10 bolts</li>
+<li>5 x M3 nuts</li>
+<li>1 x 3D printed frame - consists of 3 distinct sides (bottom, front and right)</li>
+</ul>
 
                     </main>
 
