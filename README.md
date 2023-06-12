@@ -15,11 +15,11 @@ You can access the book in a few ways:
 
 1. Clone the repo
 ```
-git clone git@github.com:LechevSpace/nanosat-workshop.git && \ 
+git clone git@github.com:AeroRust/nanosat-workshop.git && \ 
 cd nanosat-workshop
 ```
 
-**NB:** Using `git@github.com:LechevSpace/nanosat-workshop.git` requires SSH key set up on Github.
+**NB:** Using `git@github.com:AeroRust/nanosat-workshop.git` requires SSH key set up on Github.
 
 2. Build the docs of the applications
 
