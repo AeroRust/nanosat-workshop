@@ -1,0 +1,33 @@
+on:
+  push:
+    branches:
+      - skeleton-solutions
+
+name: Deploy website - book & docs
+
+jobs:
+  deploy-docs:
+    name: Deploy docs on gh-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          # Use nightly to build the docs with `--cfg docsrs`
+          toolchain: nightly
+          components: rust-docs
+          targets: riscv32imac-unknown-none-elf
+      - name: Build docs
+        # Directly put the docs inside `docs/skeleton`
+        run: cargo website-docs
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: mdbook
+      - name: Build book
+        run: mdbook build
+
+      - name: Deploy gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./website
