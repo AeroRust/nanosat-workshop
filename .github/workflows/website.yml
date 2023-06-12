@@ -6,14 +6,14 @@ on:
 name: Deploy website - book & docs
 
 jobs:
-  deploy-docs:
-    name: Deploy docs on gh-pages
+  deploy-website:
+    name: Deploy website and docs on gh-pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@master
         with:
-          # Use nightly to build the docs with `--cfg docsrs`
+          # Use the same nightly as Embassy!
           toolchain: nightly-2023-02-18
           components: rust-docs, rust-std, rust-src
           targets: x86_64-unknown-linux-gnu,riscv32imac-unknown-none-elf
