@@ -256,6 +256,7 @@ async fn run_battery_measurement_adc(
 
                 let percentage = (voltage - 3.3) / (4.2 - 3.3) * 100.0;
 
+                println!("(Debug) ADC reading: {reading} / 4096");
                 println!("Battery (V = {voltage}) {percentage} %");
             }
             Err(_) => {
@@ -263,7 +264,7 @@ async fn run_battery_measurement_adc(
             }
         };
 
-        Timer::after(Duration::from_secs(5)).await;
+        Timer::after(Duration::from_millis(30)).await;
     }
 }
 

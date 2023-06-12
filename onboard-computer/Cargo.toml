@@ -36,7 +36,7 @@ hal = { package = "esp32c3-hal", version = "0.9", features = [
     "async",
 ] }
 
-nmea.workspace = true
+nmea = { workspace = true, features = ["all-sentences"] }
 
 # debugging
 esp-backtrace.workspace = true

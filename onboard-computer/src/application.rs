@@ -65,7 +65,8 @@ impl Application {
         // Onboard LED
         // Rust ESP32-C3 schematics: https://raw.githubusercontent.com/esp-rs/esp-rust-board/master/assets/rust_board_v1_pin-layout.png
         // Set GPIO7 as an output, and set its state high initially.
-        let onboard_led = io.pins.gpio7.into_push_pull_output();
+        let mut onboard_led = io.pins.gpio7.into_push_pull_output();
+        onboard_led.set_high().unwrap();
 
         // Setup Random Generator for GNSS Reading
         // Hal example: https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/rng.rs
@@ -111,7 +112,7 @@ impl Application {
 /// The task picks random sentences from a log file and looks out for `GNS` and `GSV` messages
 ///
 ///
-/// Print the number of satellites from the GNS sentence and the satellites in view from the GSV sentence
+/// Print the ID's of satellites used for fix in GSA sentence and the satellites in view from the GSV sentence
 ///
 /// `nmea` crate docs: <https://docs.rs/nmea>
 ///
@@ -123,7 +124,7 @@ impl Application {
 /// 1. Use the `nmea` crate to parse the sentences
 /// 2. Print the parsing result (for debugging purposes) using `esp_println::println!()`
 /// 3. Use a match on the result and handle the cases:
-/// - GNS - print "Number of satellites: {x}" field
+/// - GSA - print "The IDs of satellites used for fix: {x:?}" field
 /// - GSV - print "Satellites in View: {x}" field
 /// 4. Repeat this processes every 2 seconds.
 #[embassy_executor::task]
@@ -132,18 +133,19 @@ async fn run_gnss(mut rng: Rng<'static>) {
         let num = rng.random() as u8;
         let sentence = MOCK_SENTENCES.lines().nth(num as usize).unwrap();
 
+        // println!("(debug) NMEA sentence at line: {num}: {sentence}");
         // 1. Use the `nmea` crate to parse the sentences
         // TODO: Uncomment line and finish the `todo!()`
         // let parse_result = todo!("call nmea::parse_str");
         let parse_result = nmea::parse_str(sentence);
         // 2. Print the parsing result (for debugging purposes) using `esp_println::println!()`
-        println!("{:?}", parse_result);
+        // println!("{:?}", parse_result);
         // 3. Use a match on the result and handle the sentences:
-        // - GNS
+        // - GSA
         // - GSV
         match parse_result {
-            Ok(ParseResult::GNS(gns_data)) => {
-                println!("GNS: Number of satellites: {}", gns_data.nsattelites);
+            Ok(ParseResult::GSA(gsa_data)) => {
+                println!("GSA: Fix satellites: {:?}", gsa_data.fix_sats_prn);
             }
             Ok(ParseResult::GSV(gsv_data)) => {
                 println!("GSV: Satellites in view: {}", gsv_data._sats_in_view);
