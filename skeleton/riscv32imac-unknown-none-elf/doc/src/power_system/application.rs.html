@@ -285,6 +285,15 @@
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
 </pre><pre class="rust"><code><span class="kw">use </span>embassy_executor::Executor;
 
 <span class="kw">use </span>embassy_time::{Duration, Timer};
@@ -292,7 +301,7 @@
 <span class="kw">use </span>esp_println::println;
 
 <span class="kw">use </span>hal::{
-    adc::{AdcConfig, AdcPin, Attenuation, ADC, ADC1},
+    adc::{<span class="self">self</span>, AdcCalCurve, AdcConfig, AdcPin, Attenuation, ADC, ADC1},
     clock::ClockControl,
     embassy,
     gpio::{Analog, Gpio3, Gpio8, Output, PushPull},
@@ -337,7 +346,7 @@
 /// - ADC example: &lt;https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/adc.rs&gt;
 ///
 /// pub type BatteryMeasurementPin = todo!();
-</span><span class="kw">pub type </span>BatteryMeasurementPin = AdcPin&lt;Gpio3&lt;Analog&gt;, ADC1&gt;;
+</span><span class="kw">pub type </span>BatteryMeasurementPin = AdcPin&lt;Gpio3&lt;Analog&gt;, ADC1, AdcCalCurve&lt;ADC1&gt;&gt;;
 
 <span class="kw">pub struct </span>Application {
     <span class="comment">// TODO: Uncomment when you create an `ADC` instance of the `ADC1` peripheral
@@ -413,8 +422,11 @@
         //
         // TODO: Uncomment line and implement the `todo!()` for all exercises requiring ADC1.
         // let battery_measurement_pin = todo!(&quot;Enable GPIO 3 as analog and Attenuation - 11dB for measuring the battery voltage&quot;);
-        </span><span class="kw">let </span>battery_measurement_pin =
-            adc1_config.enable_pin(io.pins.gpio3.into_analog(), Attenuation::Attenuation11dB);
+        </span><span class="kw">type </span>AdcCal = adc::AdcCalCurve&lt;ADC1&gt;;
+        <span class="kw">let </span>battery_measurement_pin = adc1_config.enable_pin_with_cal::&lt;<span class="kw">_</span>, AdcCal&gt;(
+            io.pins.gpio3.into_analog(),
+            Attenuation::Attenuation11dB,
+        );
 
         <span class="comment">// 4. Initialise ADC1 peripheral
         </span><span class="kw">let </span>adc1 = ADC::&lt;ADC1&gt;::adc(<span class="kw-2">&amp;mut </span>peripheral_clock_control, analog.adc1, adc1_config)
@@ -506,7 +518,7 @@
 </span><span class="attr">#[embassy_executor::task]
 </span><span class="kw">async fn </span>run_battery_measurement_adc(
     <span class="kw-2">mut </span>adc_1: ADC&lt;<span class="lifetime">&#39;static</span>, ADC1&gt;,
-    <span class="kw-2">mut </span>battery_measurement_pin: AdcPin&lt;Gpio3&lt;Analog&gt;, ADC1&gt;,
+    <span class="kw-2">mut </span>battery_measurement_pin: BatteryMeasurementPin,
 ) {
     <span class="kw">loop </span>{
         <span class="comment">// Take an ADC Reading
@@ -533,10 +545,16 @@
         // Formula Percentage: (voltage - 3.3) / (4.2 - 3.3) * 100
         // We use 3.3V as the lower
 
+        // 470k Ohms resistor with 1% tolerance can varie between:
+        // `465300` (465.3 k Ohms) - `474700` (474.7 k Ohms)
+
         // let scale = todo!();
         </span><span class="kw">let </span>reading_result: <span class="prelude-ty">Result</span>&lt;u16, <span class="kw">_</span>&gt; = <span class="macro">nb::block!</span>(adc_1.read(<span class="kw-2">&amp;mut </span>battery_measurement_pin));
         <span class="kw">match </span>reading_result {
             <span class="prelude-val">Ok</span>(reading) =&gt; {
+                <span class="kw">let </span>pin_value_mv = reading <span class="kw">as </span>u32 * Attenuation::Attenuation11dB.ref_mv() <span class="kw">as </span>u32 / <span class="number">4096</span>;
+                <span class="macro">println!</span>(<span class="string">&quot;PIN2 ADC reading = {reading} ({pin_value_mv} mV)&quot;</span>);
+
                 <span class="kw">let </span>precision = <span class="number">3.3 </span>/ <span class="number">4096.0</span>;
                 <span class="kw">let </span>scale = <span class="number">0.5</span>;
                 <span class="kw">let </span>voltage = reading <span class="kw">as </span>f32 * precision / scale;

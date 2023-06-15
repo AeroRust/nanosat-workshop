@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["run_battery_measurement_adc","run_blinky","run_uart"],"opaque":[""],"static":["BATTERY","POOL"],"struct":["Application"],"type":["BatteryMeasurementPin","Fut","OnboardLed"]};
+window.SIDEBAR_ITEMS = {"fn":["run_battery_measurement_adc","run_blinky","run_uart"],"opaque":[""],"static":["BATTERY","POOL"],"struct":["Application"],"type":["AdcCal","BatteryMeasurementPin","Fut","OnboardLed"]};
