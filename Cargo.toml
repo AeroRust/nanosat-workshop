@@ -70,4 +70,4 @@ nb = { version = "1.1.0", features = ["defmt-0-3"] }
 heapless = { version = "0.7.16", features = ["defmt"] }
 
 [patch.crates-io]
-hal = { package = "esp32c3-hal", version = "0.9", git = "https://github.com/esp-rs/esp-hal", rev = "2645c4e" }
+hal = { package = "esp32c3-hal", version = "0.9", git = "https://github.com/esp-rs/esp-hal", rev = "abf5dba" }

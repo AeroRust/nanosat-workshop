@@ -5,7 +5,7 @@ use embassy_time::{Duration, Timer};
 use esp_println::println;
 
 use hal::{
-    adc::{AdcConfig, AdcPin, Attenuation, ADC, ADC1},
+    adc::{self, AdcCalCurve, AdcConfig, AdcPin, Attenuation, ADC, ADC1},
     clock::ClockControl,
     embassy,
     gpio::{Analog, Gpio3, Gpio8, Output, PushPull},
@@ -50,7 +50,7 @@ pub type OnboardLed = Gpio8<Output<PushPull>>;
 /// - ADC example: <https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/adc.rs>
 ///
 /// pub type BatteryMeasurementPin = todo!();
-pub type BatteryMeasurementPin = AdcPin<Gpio3<Analog>, ADC1>;
+pub type BatteryMeasurementPin = AdcPin<Gpio3<Analog>, ADC1, AdcCalCurve<ADC1>>;
 
 pub struct Application {
     // TODO: Uncomment when you create an `ADC` instance of the `ADC1` peripheral
@@ -126,8 +126,11 @@ impl Application {
         //
         // TODO: Uncomment line and implement the `todo!()` for all exercises requiring ADC1.
         // let battery_measurement_pin = todo!("Enable GPIO 3 as analog and Attenuation - 11dB for measuring the battery voltage");
-        let battery_measurement_pin =
-            adc1_config.enable_pin(io.pins.gpio3.into_analog(), Attenuation::Attenuation11dB);
+        type AdcCal = adc::AdcCalCurve<ADC1>;
+        let battery_measurement_pin = adc1_config.enable_pin_with_cal::<_, AdcCal>(
+            io.pins.gpio3.into_analog(),
+            Attenuation::Attenuation11dB,
+        );
 
         // 4. Initialise ADC1 peripheral
         let adc1 = ADC::<ADC1>::adc(&mut peripheral_clock_control, analog.adc1, adc1_config)
@@ -219,7 +222,7 @@ async fn run_uart(mut uart: Uart<'static, UART1>) {
 #[embassy_executor::task]
 async fn run_battery_measurement_adc(
     mut adc_1: ADC<'static, ADC1>,
-    mut battery_measurement_pin: AdcPin<Gpio3<Analog>, ADC1>,
+    mut battery_measurement_pin: BatteryMeasurementPin,
 ) {
     loop {
         // Take an ADC Reading
@@ -246,10 +249,16 @@ async fn run_battery_measurement_adc(
         // Formula Percentage: (voltage - 3.3) / (4.2 - 3.3) * 100
         // We use 3.3V as the lower
 
+        // 470k Ohms resistor with 1% tolerance can varie between:
+        // `465300` (465.3 k Ohms) - `474700` (474.7 k Ohms)
+
         // let scale = todo!();
         let reading_result: Result<u16, _> = nb::block!(adc_1.read(&mut battery_measurement_pin));
         match reading_result {
             Ok(reading) => {
+                let pin_value_mv = reading as u32 * Attenuation::Attenuation11dB.ref_mv() as u32 / 4096;
+                println!("PIN2 ADC reading = {reading} ({pin_value_mv} mV)");
+
                 let precision = 3.3 / 4096.0;
                 let scale = 0.5;
                 let voltage = reading as f32 * precision / scale;

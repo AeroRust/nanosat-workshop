@@ -518,7 +518,7 @@ dependencies = [
  "embedded-dma",
  "embedded-hal 0.2.7",
  "esp-hal-procmacros 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "esp-riscv-rt",
+ "esp-riscv-rt 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "esp32c3",
  "fugit",
  "nb 1.1.0",
@@ -532,7 +532,7 @@ dependencies = [
 [[package]]
 name = "esp-hal-common"
 version = "0.9.0"
-source = "git+https://github.com/esp-rs/esp-hal?rev=2645c4e#2645c4e3e6026e3fb4079929e55728be67815a27"
+source = "git+https://github.com/esp-rs/esp-hal?rev=abf5dba#abf5dba988f4df90d72293f272963c1692a9edcd"
 dependencies = [
  "basic-toml",
  "bitflags 2.2.1",
@@ -547,8 +547,8 @@ dependencies = [
  "embedded-hal 1.0.0-alpha.10",
  "embedded-hal-async",
  "embedded-hal-nb",
- "esp-hal-procmacros 0.5.0 (git+https://github.com/esp-rs/esp-hal?rev=2645c4e)",
- "esp-riscv-rt",
+ "esp-hal-procmacros 0.5.0 (git+https://github.com/esp-rs/esp-hal?rev=abf5dba)",
+ "esp-riscv-rt 0.3.0 (git+https://github.com/esp-rs/esp-hal?rev=abf5dba)",
  "esp32c3",
  "fugit",
  "log",
@@ -577,7 +577,7 @@ dependencies = [
 [[package]]
 name = "esp-hal-procmacros"
 version = "0.5.0"
-source = "git+https://github.com/esp-rs/esp-hal?rev=2645c4e#2645c4e3e6026e3fb4079929e55728be67815a27"
+source = "git+https://github.com/esp-rs/esp-hal?rev=abf5dba#abf5dba988f4df90d72293f272963c1692a9edcd"
 dependencies = [
  "darling 0.14.4",
  "proc-macro-crate",
@@ -601,6 +601,15 @@ name = "esp-riscv-rt"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e523ed9a26c604d4469dff4777484b14f977e864ba041f634ade1d7f47ef4151"
+dependencies = [
+ "riscv",
+ "riscv-rt-macros",
+]
+
+[[package]]
+name = "esp-riscv-rt"
+version = "0.3.0"
+source = "git+https://github.com/esp-rs/esp-hal?rev=abf5dba#abf5dba988f4df90d72293f272963c1692a9edcd"
 dependencies = [
  "riscv",
  "riscv-rt-macros",
@@ -655,7 +664,7 @@ dependencies = [
 [[package]]
 name = "esp32c3-hal"
 version = "0.9.0"
-source = "git+https://github.com/esp-rs/esp-hal?rev=2645c4e#2645c4e3e6026e3fb4079929e55728be67815a27"
+source = "git+https://github.com/esp-rs/esp-hal?rev=abf5dba#abf5dba988f4df90d72293f272963c1692a9edcd"
 dependencies = [
  "cfg-if",
  "embassy-time 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -664,7 +673,7 @@ dependencies = [
  "embedded-hal 1.0.0-alpha.10",
  "embedded-hal-async",
  "embedded-hal-nb",
- "esp-hal-common 0.9.0 (git+https://github.com/esp-rs/esp-hal?rev=2645c4e)",
+ "esp-hal-common 0.9.0 (git+https://github.com/esp-rs/esp-hal?rev=abf5dba)",
 ]
 
 [[package]]
