@@ -1,4 +1,4 @@
-[target.riscv32imac-unknown-none-elf]
+[target.riscv32imc-unknown-none-elf]
 runner = "espflash flash --monitor"
 
 [build]
@@ -45,7 +45,7 @@ rustflags = [
 ]
 rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
 
-target = "riscv32imac-unknown-none-elf"
+target = "riscv32imc-unknown-none-elf"
 
 [unstable]
 # for alloc
@@ -53,8 +53,8 @@ target = "riscv32imac-unknown-none-elf"
 build-std = ["core"]
 
 [alias]
-rb = "run --target riscv32imac-unknown-none-elf --bin"
-rrb = "run --target riscv32imac-unknown-none-elf --release --bin"
+rb = "run --target riscv32imc-unknown-none-elf --bin"
+rrb = "run --target riscv32imc-unknown-none-elf --release --bin"
 t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
 
 website-docs = "doc --no-deps --workspace --target-dir ./docs/skeleton --document-private-items"

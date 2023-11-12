@@ -5,8 +5,8 @@ Both applications are structured in the following way to allow you to follow the
   - [`power_system::Application::init`][power-system-application-init]
   - [`onboard_computer::Application::init`][onboard-computer-application-init]
 
-[power-system-application-init]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/struct.Application.html#method.init
-[onboard-computer-application-init]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/struct.Application.html#method.init
+[power-system-application-init]: ./skeleton/riscv32imc-unknown-none-elf/doc/power_system/application/struct.Application.html#method.init
+[onboard-computer-application-init]: ./skeleton/riscv32imc-unknown-none-elf/doc/onboard_computer/application/struct.Application.html#method.init
 
 - `Application:run` - spawns all tasks on the embassy executor needed for our `Application`.
   - [`power_system::Application::run`][power-system-application-run]
@@ -14,8 +14,8 @@ Both applications are structured in the following way to allow you to follow the
   - `power_system::Application::init`
 - An embassy task `fn run_*(..)` for each exercise
 
-[power-system-application-run]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/struct.Application.html#method.run
-[onboard-computer-application-run]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/struct.Application.html#method.run
+[power-system-application-run]: ./skeleton/riscv32imc-unknown-none-elf/doc/power_system/application/struct.Application.html#method.run
+[onboard-computer-application-run]: ./skeleton/riscv32imc-unknown-none-elf/doc/onboard_computer/application/struct.Application.html#method.run
 
 ### Power System Application (`power-system` folder)
 
@@ -47,19 +47,19 @@ Start with the [`power-system`][power-system]:
 2. Battery measurement with ADC - measure and calculate the battery voltage and percentage - [`power_system::application::run_battery_measurement_adc`][ps-run_battery_measurement_adc]
 3. Send Battery percentage over UART to the `onboard-computer` - [`power_system::application::run_uart`][ps-run_uart]
 
-[ps-run_blinky]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_blinky.html
-[ps-run_battery_measurement_adc]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_battery_measurement_adc.html
-[ps-run_uart]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/application/fn.run_uart.html
+[ps-run_blinky]: ./skeleton/riscv32imc-unknown-none-elf/doc/power_system/application/fn.run_blinky.html
+[ps-run_battery_measurement_adc]: ./skeleton/riscv32imc-unknown-none-elf/doc/power_system/application/fn.run_battery_measurement_adc.html
+[ps-run_uart]: ./skeleton/riscv32imc-unknown-none-elf/doc/power_system/application/fn.run_uart.html
 
 Continue with the next exercises in the [`onboard-computer`][onboard-computer]:
 
 1. Receive battery percentage over UART from the `power-system` - [`onboard_computer::application::run_uart`][obc-run_uart]
 2. GNSS receiver - parse NMEA 0183 sentences - [`onboard_computer::application::run_gnss`][obc-run_gnss]
 
-[power-system]: ./skeleton/riscv32imac-unknown-none-elf/doc/power_system/index.html
-[onboard-computer]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/index.html
-[obc-run_uart]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/fn.run_uart.html
-[obc-run_gnss]: ./skeleton/riscv32imac-unknown-none-elf/doc/onboard_computer/application/fn.run_gnss.html
+[power-system]: ./skeleton/riscv32imc-unknown-none-elf/doc/power_system/index.html
+[onboard-computer]: ./skeleton/riscv32imc-unknown-none-elf/doc/onboard_computer/index.html
+[obc-run_uart]: ./skeleton/riscv32imc-unknown-none-elf/doc/onboard_computer/application/fn.run_uart.html
+[obc-run_gnss]: ./skeleton/riscv32imc-unknown-none-elf/doc/onboard_computer/application/fn.run_gnss.html
 
 ## Future ideas you can develop
 In no particular order:
