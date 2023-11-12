@@ -15,10 +15,13 @@ default-run = "power-system"
 # "feature `embassy-time-systick` includes `esp32c3-hal:embassy-time-systick` which is neither a dependency nor another feature"
 # default = ["embassy-time-systick", "defmt"]
 # default = ["embassy-time-timg0"]
-default = ["embassy-time-timg0", "riscv"]
+# default = ["embassy-time-timg0", "riscv"]
+# systick for time by default
+default = ["embassy-time-systick", "riscv"]
+# default = ["riscv"]
 # default = ["defmt", "embassy-time-timg0", "wifi"]
 
-wifi = ["esp-wifi"]
+# wifi = ["esp-wifi"]
 std = ["embassy-executor/arch-std", "critical-section/std"]
 # std = ["embassy-executor/arch-std", "once_cell/std", "critical-section/std"]
 riscv = ["embassy-executor/arch-riscv32"]
@@ -39,7 +42,7 @@ embassy-time-timg0 = [
 # embassy-time-timg0 = ["embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.9", features = [
+hal = { package = "esp32c3-hal", version = "0.13", features = [
     "rt",
     "embassy",
     "eh1",
@@ -54,9 +57,9 @@ esp-println.workspace = true
 # Allocator
 # esp-alloc.workspace = true
 
-esp-wifi = { workspace = true, optional = true }
+# esp-wifi = { workspace = true, optional = true }
 # Keep the same as in esp-wifi
-embedded-svc = { workspace = true, optional = true }
+# embedded-svc = { workspace = true, optional = true }
 
 # Embassy
 # embassy latest main ref: f9c0c53
@@ -75,7 +78,8 @@ embedded-hal.workspace = true
 embedded-hal-1.workspace = true
 embedded-hal-async.workspace = true
 embedded-hal-nb.workspace = true
-embedded-can.workspace = true
+embedded-io-async.workspace = true
+# embedded-can.workspace = true
 
 static_cell.workspace = true
 

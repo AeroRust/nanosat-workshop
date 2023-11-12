@@ -11,6 +11,9 @@ rustflags = [
   "-C",
   "force-frame-pointers",
 
+  # WiFi
+  "-C", "link-arg=-Trom_functions.x",
+
   # Atomic emulation
 
   # comment the cfgs below if you do _not_ wish to emulate atomics.
@@ -45,7 +48,9 @@ rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-pag
 target = "riscv32imac-unknown-none-elf"
 
 [unstable]
-build-std = ["alloc", "core"]
+# for alloc
+# build-std = ["alloc", "core"]
+build-std = ["core"]
 
 [alias]
 rb = "run --target riscv32imac-unknown-none-elf --bin"

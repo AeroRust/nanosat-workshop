@@ -8,18 +8,21 @@ use embassy_executor::Executor;
 
 use hal::peripherals::Peripherals;
 
-use static_cell::StaticCell;
+use static_cell::make_static;
 
 use onboard_computer::Application;
 
-static EXECUTOR: StaticCell<Executor> = StaticCell::new();
+// static EXECUTOR: StaticCell<Executor> = StaticCell::new();
 
 #[hal::entry]
 fn main() -> ! {
     esp_println::println!("Init!");
     let peripherals = Peripherals::take();
 
-    let executor = EXECUTOR.init(Executor::new());
+    esp_println::logger::init_logger_from_env();
+    log::info!("Logger is setup");
+
+    let executor = make_static!(Executor::new());
 
     Application::init(peripherals).run(executor)
 }

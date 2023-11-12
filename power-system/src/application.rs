@@ -1,3 +1,5 @@
+use core::sync::atomic::AtomicU8;
+
 use embassy_executor::Executor;
 
 use embassy_time::{Duration, Timer};
@@ -6,19 +8,19 @@ use esp_println::println;
 
 use hal::{
     adc::{self, AdcCalCurve, AdcConfig, AdcPin, Attenuation, ADC, ADC1},
+    analog::AvailableAnalog,
     clock::ClockControl,
     embassy,
     gpio::{Analog, Gpio3, Gpio8, Output, PushPull},
-    interrupt,
+    interrupt::{self, Priority},
     peripherals::{Interrupt, Peripherals, UART1},
     prelude::*,
     system::SystemParts,
     timer::TimerGroup,
-    uart::TxRxPins,
-    Priority, Rtc, Uart, IO,
+    uart, Rtc, Uart, IO,
 };
 
-use core::{fmt::Write, sync::atomic::AtomicU8, writeln};
+use embedded_io_async::{Read, Write};
 
 /// # Exercise: Send Battery percentage over UART to the `onboard-computer`
 ///
@@ -52,11 +54,14 @@ pub type OnboardLed = Gpio8<Output<PushPull>>;
 /// pub type BatteryMeasurementPin = todo!();
 pub type BatteryMeasurementPin = AdcPin<Gpio3<Analog>, ADC1, AdcCalCurve<ADC1>>;
 
+// Uart rx_fifo_full_threshold
+const UART_READ_BUF_SIZE: usize = 64;
+
 pub struct Application {
     // TODO: Uncomment when you create an `ADC` instance of the `ADC1` peripheral
     adc: ADC<'static, ADC1>,
     // TODO: Uncomment when you create a `Uart` instance of the `UART1` peripheral
-    uart: Uart<'static, UART1>,
+    // uart: Uart<'static, UART1>,
     // TODO: Uncomment when you create the `OnboardLed` instance
     onboard_led: OnboardLed,
     // TODO: Uncomment when you create the `AdcPin` instance
@@ -70,12 +75,9 @@ impl Application {
         let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
 
         let mut rtc = Rtc::new(peripherals.RTC_CNTL);
-        let mut peripheral_clock_control = system.peripheral_clock_control;
-        let timer_group0 =
-            TimerGroup::new(peripherals.TIMG0, &clocks, &mut peripheral_clock_control);
+        let timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks);
         let mut wdt0 = timer_group0.wdt;
-        let timer_group1 =
-            TimerGroup::new(peripherals.TIMG1, &clocks, &mut peripheral_clock_control);
+        let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks);
         let mut wdt1 = timer_group1.wdt;
 
         // Disable watchdog timers
@@ -85,7 +87,10 @@ impl Application {
         wdt1.disable();
 
         #[cfg(feature = "embassy-time-systick")]
-        embassy::init(&clocks, system_timer);
+        embassy::init(
+            &clocks,
+            hal::systimer::SystemTimer::new(peripherals.SYSTIMER),
+        );
 
         #[cfg(feature = "embassy-time-timg0")]
         embassy::init(&clocks, timer_group0.timer0);
@@ -111,8 +116,8 @@ impl Application {
         //
         // 1. Get the ADC peripherals
         // TODO: Uncomment line and implement the `todo!()` for all exercises requiring ADC.
-        // let analog = todo!("You need to split() the `APB_SARADC` peripheral from `peripherals`");
-        let analog = peripherals.APB_SARADC.split();
+        // let analog: AvailableAnalog = todo!("You need to split() the `APB_SARADC` peripheral from `peripherals`");
+        let analog: AvailableAnalog = peripherals.APB_SARADC.split();
         // 2. Create a configuration for ADC1
         //
         // TODO: Uncomment line and implement the `todo!()` for all exercises requiring ADC1.
@@ -133,8 +138,7 @@ impl Application {
         );
 
         // 4. Initialise ADC1 peripheral
-        let adc1 = ADC::<ADC1>::adc(&mut peripheral_clock_control, analog.adc1, adc1_config)
-            .expect("Failed to init ADC1");
+        let adc1 = ADC::<ADC1>::adc(analog.adc1, adc1_config).expect("Failed to init ADC1");
 
         // TODO: Upcoming future exercise - power sensing:
         // adc1_config.enable_pin(io.pins.gpio4.into_analog(), Attenuation::Attenuation11dB);
@@ -157,16 +161,26 @@ impl Application {
         //
         // TODO: Uncomment line and implement the `todo!()` for the exercise
         // let uart1 = todo!("Configure UART 1 at pins 0 (TX) and 1 (RX) with `None` or default for the `Config`");
-        let uart1 = Uart::new_with_config(
+        let mut uart1 = Uart::new_with_config(
             peripherals.UART1,
-            None,
-            Some(TxRxPins::new_tx_rx(
-                io.pins.gpio0.into_floating_input(),
-                io.pins.gpio1.into_push_pull_output(),
+            uart::config::Config {
+                baudrate: 115200,
+                data_bits: uart::config::DataBits::DataBits8,
+                parity: uart::config::Parity::ParityNone,
+                stop_bits: uart::config::StopBits::STOP1,
+            },
+            Some(uart::TxRxPins::new_tx_rx(
+                io.pins.gpio0.into_push_pull_output(),
+                io.pins.gpio1.into_floating_input(),
             )),
             &clocks,
-            &mut peripheral_clock_control,
         );
+
+        // uart1.set_at_cmd(uart::config::AtCmdConfig::new(None, None, None, UART_AT_CMD, None));
+        // uart1
+        //     .set_rx_fifo_full_threshold(UART_READ_BUF_SIZE as u16)
+        //     .unwrap();
+
         // 2. Enable the UART1 interrupt using Priority1
         // HAL docs: https://docs.rs/esp32c3-hal/latest/esp32c3_hal/interrupt/fn.enable.html
         //
@@ -178,7 +192,7 @@ impl Application {
 
         Self {
             adc: adc1,
-            uart: uart1,
+            // uart: uart1,
             onboard_led,
             battery_measurement_pin,
         }
@@ -192,30 +206,82 @@ impl Application {
                 self.battery_measurement_pin,
             ));
             spawner.must_spawn(run_blinky(self.onboard_led));
-            spawner.must_spawn(run_uart(self.uart));
+            // spawner.must_spawn(run_uart(self.uart));
         })
     }
 }
 
 /// # Exercise: Send Battery percentage over UART to the `onboard-computer`
 #[embassy_executor::task]
-async fn run_uart(mut uart: Uart<'static, UART1>) {
+async fn run_uart(uart: Uart<'static, UART1>) {
+    // split the TX & RX parts of the Uart instance
+    let (mut tx, mut rx) = uart.split();
+
     // This communication task will be executed every 1 second
     // First the battery percentage will be sent to the power system
     // Second, the task will enter blocking state until new GNSS message is received from power system
-    loop {
-        // Transmit Operations
-        // First we send the battery percentage value to the Power system
-        uart.write_str("Hello world!").ok();
 
-        // Receive Operations
-        // Second we poll UART receiver to check if any messages are received
-        // This code will receive NMEA messages from the power board
-        // Code will NOT? block until message is received
-        // On board computer needs to send the GNSS messages more frequently so that this task does not block for long
-        // (Can look into option of using async hal/interrupts but not sure if supported)
-        Timer::after(Duration::from_millis(50)).await;
-    }
+    // Transmit Operations
+    // First we send the battery percentage value to the Power system
+    let send = async {
+        esp_println::println!("Uart writing...");
+        loop {
+            let data = "Hello async serial. Enter something ended with EOT (CTRL-D).\r\n";
+
+            match Write::write_all(&mut tx, data.as_bytes()).await {
+                Ok(_) => println!(
+                    "wrote '{data}' ({} bytes total) to UART",
+                    data.as_bytes().len()
+                ),
+                Err(err) => println!("Error writing to UART: {err:?}"),
+            }
+            Timer::after(Duration::from_millis(5000)).await;
+        }
+    };
+
+    // Receive Operations
+    // Second we poll UART receiver to check if any messages are received
+    // This code will receive NMEA messages from the power board
+    // Code will NOT? block until message is received
+    // On board computer needs to send the GNSS messages more frequently so that this task does not block for long
+    let receive = async {
+        esp_println::println!("Uart reading...");
+        // max message size to receive
+        // leave some extra space for AT-CMD characters
+        const MAX_BUFFER_SIZE: usize = 10 * UART_READ_BUF_SIZE + 16;
+
+        loop {
+            let mut rbuf: heapless::Vec<u8, MAX_BUFFER_SIZE> = heapless::Vec::new();
+            // let mut rbuf: [u8; MAX_BUFFER_SIZE] = [0_u8; MAX_BUFFER_SIZE];
+            let mut offset: usize = 0;
+
+            while let Ok(len) = Read::read(&mut rx, &mut rbuf[offset..]).await {
+                println!("read {len} bytes over UART");
+                offset += len;
+                if offset == 0 {
+                    println!("Clear read buffer");
+                    // rbuf.truncate(0);
+                    rbuf.clear();
+                    break;
+                }
+                // if set_at_cmd is used than stop reading
+                if len < UART_READ_BUF_SIZE {
+                    rbuf.truncate(offset);
+                    break;
+                }
+            }
+
+            if offset > 0 {
+                match core::str::from_utf8(&rbuf) {
+                    Ok(received_str) => println!("Received String over UART: {received_str}"),
+                    Err(err) => println!("UTF-8 error parsing UART bytes as string: {err}"),
+                }
+            }
+        }
+    };
+
+    // run the two futures (receive and send) forever
+    embassy_futures::select::select(receive, send).await;
 }
 
 /// # Exercise: Battery measurement with ADC
@@ -253,27 +319,31 @@ async fn run_battery_measurement_adc(
         // `465300` (465.3 k Ohms) - `474700` (474.7 k Ohms)
 
         // let scale = todo!();
-        let reading_result: Result<u16, _> = nb::block!(adc_1.read(&mut battery_measurement_pin));
-        match reading_result {
+        // let reading_result: Result<u16, _> = nb::block!(adc_1.read(&mut battery_measurement_pin));
+        // match reading_result {
+        let reading: Result<u16, _> = adc_1.read(&mut battery_measurement_pin);
+        match reading {
             Ok(reading) => {
-                let pin_value_mv = reading as u32 * Attenuation::Attenuation11dB.ref_mv() as u32 / 4096;
-                println!("PIN2 ADC reading = {reading} ({pin_value_mv} mV)");
-
-                let precision = 3.3 / 4096.0;
+                let precision = Attenuation::Attenuation11dB.ref_mv() as f32 / 4096.0;
                 let scale = 0.5;
-                let voltage = reading as f32 * precision / scale;
+                let pin_value_mv = reading as f32 * precision;
+                let voltage = pin_value_mv / scale / 1000.0;
+                println!("(Debug) ADC reading = {reading} ({pin_value_mv} mV)");
 
                 let percentage = (voltage - 3.3) / (4.2 - 3.3) * 100.0;
 
-                println!("(Debug) ADC reading: {reading} / 4096");
+                println!("(Debug) ADC reading: {reading}");
                 println!("Battery (V = {voltage}) {percentage} %");
+            }
+            Err(nb::Error::WouldBlock) => {
+                // do nothing
             }
             Err(_) => {
                 println!("Failed to read ADC 1 value")
             }
         };
 
-        Timer::after(Duration::from_millis(30)).await;
+        Timer::after(Duration::from_millis(3000)).await;
     }
 }
 
