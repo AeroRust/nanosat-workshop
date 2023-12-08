@@ -65,13 +65,14 @@ embedded-io-async = { version = "0.6", features = ["defmt-03"] }
 embedded-io = { version = "0.6", features = ["defmt-03"] }
 
 defmt = { version = "0.3" }
-defmt-rtt = "0.4.0"
+# defmt-rtt = "0.4.0"
 
 # required for running tests
 critical-section = { version = "1.1" }
 
 nmea = { version = "0.6.0", default-features = false, features = ["all-sentences"] }
 
+portable-atomic = { version = "1.5" }
 static_cell = { version = "2", features = ["nightly"] }
 # once_cell = { version = "1.0", default-features = false, features = ["critical-section"] }
 fugit = { version = "0.3", features = ["defmt"] }
@@ -80,8 +81,8 @@ nb = { version = "1.1", features = ["defmt-0-3"] }
 heapless = { version = "0.8", features = ["defmt-03"] }
 
 [patch.crates-io]
-# hal = { package = "esp32c3-hal", version = "0.13", git = "https://github.com/esp-rs/esp-hal", rev = "07ed22d" }
-hal = { package = "esp32c3-hal", version = "0.13", path = "../esp-hal/esp32c3-hal" }
+hal = { package = "esp32c3-hal", version = "0.13", git = "https://github.com/esp-rs/esp-hal", rev = "ece40abaed0e642b751a8752ce6406740efa4af6" }
+# hal = { package = "esp32c3-hal", version = "0.13", path = "../esp-hal/esp32c3-hal" }
 
 # embassy-executor = { version = "0.3", git = "https://github.com/embassy-rs/embassy", rev = "39c7371" }
 embassy-net = { version = "0.2", git = "https://github.com/embassy-rs/embassy", rev = "39c7371" }
@@ -91,3 +92,7 @@ embassy-sync = { version = "0.4", git = "https://github.com/embassy-rs/embassy",
 # embassy-embedded-hal = { version = "0.1", git = "https://github.com/embassy-rs/embassy", rev = "39c7371" }
 
 # bmp388 = { version = "0.1", path = "../bmp388" }
+# rev `d277bae` is the commit that merges `feat/embedded-hal-async-traits`
+bmp388 = { version = "0.1", git = "https://github.com/ibutra/bmp388", rev = "d277bae" }
+
+nmea = { version = "0.6.0", git = "https://github.com/AeroRust/nmea", branch = "fix/gsa-fix-sats-prn-size" }

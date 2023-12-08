@@ -110,6 +110,7 @@ checksum = "327762f6e5a765692301e5bb513e0d9fef63be86bbc14528052b1cd3e6f03e07"
 [[package]]
 name = "bmp388"
 version = "0.1.0"
+source = "git+https://github.com/ibutra/bmp388?rev=d277bae#d277bae54452bf5eb5938d69bc533a283fdb17b0"
 dependencies = [
  "embedded-hal 0.2.7",
  "embedded-hal-async",
@@ -208,16 +209,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "269924c02afd7f94bc4cecbfa5c379f6ffcf9766b3408fe63d22c728654eccd0"
 dependencies = [
  "thiserror",
-]
-
-[[package]]
-name = "defmt-rtt"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "609923761264dd99ed9c7d209718cda4631c5fe84668e0f0960124cbb844c49f"
-dependencies = [
- "critical-section",
- "defmt",
 ]
 
 [[package]]
@@ -464,12 +455,14 @@ dependencies = [
 [[package]]
 name = "esp-hal-common"
 version = "0.13.1"
+source = "git+https://github.com/esp-rs/esp-hal?rev=ece40abaed0e642b751a8752ce6406740efa4af6#ece40abaed0e642b751a8752ce6406740efa4af6"
 dependencies = [
  "basic-toml",
  "bitfield",
  "bitflags 2.4.1",
  "cfg-if",
  "critical-section",
+ "embassy-executor",
  "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "embassy-sync",
  "embassy-time",
@@ -485,6 +478,7 @@ dependencies = [
  "esp-riscv-rt",
  "esp32c3",
  "fugit",
+ "heapless 0.7.16",
  "nb 1.1.0",
  "paste",
  "portable-atomic",
@@ -496,6 +490,7 @@ dependencies = [
 [[package]]
 name = "esp-hal-procmacros"
 version = "0.7.0"
+source = "git+https://github.com/esp-rs/esp-hal?rev=ece40abaed0e642b751a8752ce6406740efa4af6#ece40abaed0e642b751a8752ce6406740efa4af6"
 dependencies = [
  "darling",
  "litrs",
@@ -519,6 +514,7 @@ dependencies = [
 [[package]]
 name = "esp-riscv-rt"
 version = "0.5.0"
+source = "git+https://github.com/esp-rs/esp-hal?rev=ece40abaed0e642b751a8752ce6406740efa4af6#ece40abaed0e642b751a8752ce6406740efa4af6"
 dependencies = [
  "riscv",
  "riscv-rt-macros",
@@ -537,6 +533,7 @@ dependencies = [
 [[package]]
 name = "esp32c3-hal"
 version = "0.13.0"
+source = "git+https://github.com/esp-rs/esp-hal?rev=ece40abaed0e642b751a8752ce6406740efa4af6#ece40abaed0e642b751a8752ce6406740efa4af6"
 dependencies = [
  "cfg-if",
  "embassy-time",
@@ -824,8 +821,7 @@ dependencies = [
 [[package]]
 name = "nmea"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53d5ae624a2d6d1f119eb99fbc433dcaa660e283e3abdfa67e3094418978a9fb"
+source = "git+https://github.com/AeroRust/nmea?branch=fix/gsa-fix-sats-prn-size#8e737b021a32701ce33ee38a1bb68d365c84d363"
 dependencies = [
  "arrayvec",
  "cfg-if",
@@ -918,9 +914,6 @@ name = "portable-atomic"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bccab0e7fd7cc19f820a1c8c91720af652d0c88dc9664dd72aef2614f04af3b"
-dependencies = [
- "critical-section",
-]
 
 [[package]]
 name = "power-system"
@@ -928,7 +921,6 @@ version = "0.1.0"
 dependencies = [
  "critical-section",
  "defmt",
- "defmt-rtt",
  "embassy-executor",
  "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "embassy-net",
@@ -946,6 +938,7 @@ dependencies = [
  "fugit",
  "heapless 0.8.0",
  "nb 1.1.0",
+ "portable-atomic",
  "static_cell",
 ]
 

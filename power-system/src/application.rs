@@ -1,4 +1,4 @@
-use core::sync::atomic::AtomicU8;
+use portable_atomic::AtomicU8;
 
 use embassy_executor::Executor;
 
@@ -61,7 +61,7 @@ pub struct Application {
     // TODO: Uncomment when you create an `ADC` instance of the `ADC1` peripheral
     adc: ADC<'static, ADC1>,
     // TODO: Uncomment when you create a `Uart` instance of the `UART1` peripheral
-    // uart: Uart<'static, UART1>,
+    uart: Uart<'static, UART1>,
     // TODO: Uncomment when you create the `OnboardLed` instance
     onboard_led: OnboardLed,
     // TODO: Uncomment when you create the `AdcPin` instance
@@ -161,7 +161,7 @@ impl Application {
         //
         // TODO: Uncomment line and implement the `todo!()` for the exercise
         // let uart1 = todo!("Configure UART 1 at pins 0 (TX) and 1 (RX) with `None` or default for the `Config`");
-        let mut uart1 = Uart::new_with_config(
+        let uart1 = Uart::new_with_config(
             peripherals.UART1,
             uart::config::Config {
                 baudrate: 115200,
@@ -175,6 +175,10 @@ impl Application {
             )),
             &clocks,
         );
+
+        let debug_uart = peripherals.UART0;
+        let tx = io.pins.gpio21;
+        let rx = io.pins.gpio20;
 
         // uart1.set_at_cmd(uart::config::AtCmdConfig::new(None, None, None, UART_AT_CMD, None));
         // uart1
@@ -192,7 +196,7 @@ impl Application {
 
         Self {
             adc: adc1,
-            // uart: uart1,
+            uart: uart1,
             onboard_led,
             battery_measurement_pin,
         }
@@ -315,7 +319,7 @@ async fn run_battery_measurement_adc(
         // Formula Percentage: (voltage - 3.3) / (4.2 - 3.3) * 100
         // We use 3.3V as the lower
 
-        // 470k Ohms resistor with 1% tolerance can varie between:
+        // 470k Ohms resistor with 1% tolerance can varies between:
         // `465300` (465.3 k Ohms) - `474700` (474.7 k Ohms)
 
         // let scale = todo!();
@@ -324,9 +328,11 @@ async fn run_battery_measurement_adc(
         let reading: Result<u16, _> = adc_1.read(&mut battery_measurement_pin);
         match reading {
             Ok(reading) => {
-                let precision = Attenuation::Attenuation11dB.ref_mv() as f32 / 4096.0;
+                // let precision = Attenuation::Attenuation11dB.ref_mv() as f32 / 4096.0;
+                // let pin_value_mv = reading as f32 * precision;
+                
                 let scale = 0.5;
-                let pin_value_mv = reading as f32 * precision;
+                let pin_value_mv = reading as f32;
                 let voltage = pin_value_mv / scale / 1000.0;
                 println!("(Debug) ADC reading = {reading} ({pin_value_mv} mV)");
 

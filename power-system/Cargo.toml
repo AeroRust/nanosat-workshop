@@ -82,6 +82,7 @@ embedded-io-async.workspace = true
 # embedded-can.workspace = true
 
 static_cell.workspace = true
+portable-atomic = { workspace = true, features = ["unsafe-assume-single-core"] }
 
 # required for running tests
 critical-section = { workspace = true }
@@ -90,7 +91,7 @@ heapless.workspace = true
 
 fugit.workspace = true
 
-defmt-rtt.workspace = true
+# defmt-rtt.workspace = true
 defmt.workspace = true
 
 [dev-dependencies]

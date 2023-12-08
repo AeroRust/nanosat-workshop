@@ -1,26 +1,32 @@
 [package]
 name = "onboard-computer"
 version = "0.1.0"
-authors = [
-    "Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>",
-]
+authors = ["Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>"]
 license = "MIT OR Apache-2.0"
 
 edition = "2021"
 publish = false
 
 [features]
-default = ["embassy-time-systick", "riscv"]
+default = ["embassy-time-systick", "riscv", "run-gnss", "run-pressure-and-temperature"]
 # default = ["riscv"]
 
-embassy-time-systick = [
-    "hal/embassy-time-systick",
-    "embassy-time/tick-hz-16_000_000",
-]
-embassy-time-timg0 = [
-    "hal/embassy-time-timg0",
-    "embassy-time/tick-hz-1_000_000",
-]
+# Enables the GNSS receiver in code
+run-gnss = []
+
+# TODO: Add `run-humidity-and-temperature` once there is support for Async
+run-sensors = ["run-imu", "run-pressure-and-temperature"]
+# Enables the IMU sensor readings (icm42670)
+run-imu = []
+
+# Enables the Humidity + Temperature sensor readings (shtc3)
+run-humidity-and-temperature = []
+
+# Enables the Pressure + Temperature sensor readings (BMP388)
+run-pressure-and-temperature = []
+
+embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
+embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
 
 # wifi = ["esp-wifi"]
 
@@ -43,8 +49,8 @@ nmea = { workspace = true, features = ["all-sentences"] }
 # IMU that comes on the ESP32-C3-Rust board
 icm42670 = { version = "0.1.1", path = "../../icm42670" }
 shtcx = "0.11"
-# bmp388 = { version = "0.1", rev = "de25256", git = "https://github.com/ibutra/bmp388" }
-bmp388 = { version = "0.1", path = "../../bmp388" }
+# enable async version
+bmp388 = { version = "0.1", features = ["nightly"] }
 
 # debugging
 esp-backtrace.workspace = true
@@ -58,9 +64,7 @@ log.workspace = true
 # Keep the same as in esp-wifi
 # embedded-svc = { workspace = true, optional = true }
 
-embassy-executor = { workspace = true, features = ["nightly",
-    "integrated-timers",
-    "executor-thread",]}
+embassy-executor = { workspace = true, features = ["nightly", "integrated-timers", "executor-thread"] }
 embassy-sync.workspace = true
 embassy-futures.workspace = true
 embassy-net.workspace = true
@@ -86,9 +90,8 @@ heapless.workspace = true
 
 fugit.workspace = true
 
-
 # Patch for esp32c3 hal crate
-portable-atomic = { version = "1.5", features = ["critical-section", "unsafe-assume-single-core"] }
+portable-atomic = { workspace = true, features = ["unsafe-assume-single-core"] }
 # defmt-rtt.workspace = true
 # defmt.workspace = true
 
