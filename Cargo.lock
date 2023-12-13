@@ -720,6 +720,7 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 [[package]]
 name = "icm42670"
 version = "0.1.1"
+source = "git+https://github.com/LechevSpace/icm42670?branch=feat/embedded-hal-async-rc#01dc2e06ce1d22b69e0daed46f9ccc98e1f68452"
 dependencies = [
  "accelerometer",
  "embedded-hal 0.2.7",
