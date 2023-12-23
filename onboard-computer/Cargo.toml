@@ -8,8 +8,28 @@ edition = "2021"
 publish = false
 
 [features]
-default = ["embassy-time-systick", "riscv", "run-gnss", "run-pressure-and-temperature"]
+default = ["riscv", "run-gnss", "run-pressure-and-temperature"]
 # default = ["riscv"]
+
+# esp32-c3 = ["riscv", "dep:shtcx", "dep:icm42670", "dep:log", "dep:esp-backtrace",
+esp32-c3 = ["riscv", "dep:log", "dep:esp-backtrace",
+    "esp32c3",
+    # either
+    "esp32c3/embassy-time-systick", # or "embassy-time-timg0"
+    "portable-atomic/unsafe-assume-single-core"
+]
+pico-w = ["cortex-m", "rp2040", "defmt", "dep:pico-w"]
+# default = ["firmware"]
+
+cortex-m = ["dep:cortex-m", "dep:cortex-m-rt", "dep:panic-probe"]
+rp2040 = [
+    # "embassy-rp/critical-section-impl",
+    # "embassy-rp/rt",
+    # "embassy-rp/time-driver",
+    "embassy-executor/arch-cortex-m",
+    "portable-atomic/critical-section",
+    "portable-atomic/require-cas",
+]
 
 # Enables the GNSS receiver in code
 run-gnss = []
@@ -25,47 +45,51 @@ run-humidity-and-temperature = []
 # Enables the Pressure + Temperature sensor readings (BMP388)
 run-pressure-and-temperature = []
 
-embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
-embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
-
 # wifi = ["esp-wifi"]
 
-std = ["embassy-executor/arch-std", "critical-section/std"]
+defmt = [
+    "dep:defmt",
+    "dep:defmt-rtt",
+    # "heapless/defmt-impl",
+    # "panic-probe/print-defmt",
+    "embassy-sync/defmt",
+    "embassy-executor/defmt",
+    "embassy-time/defmt",
+    # "embassy-embedded-hal/defmt",
+    "embassy-time/defmt-timestamp-uptime",
+    # "embassy-rp/defmt",
+    # "embassy-usb/defmt",
+    # "embassy-net/defmt",
+    # "embedded-hal-async/defmt-03",
+    # "embedded-io/defmt-03",
+    # "embedded-io-async/defmt-03",
+]
+
+std = [
+    "alloc",
+    "embassy-executor/arch-std",
+    "embassy-time/std",
+    "embassy-sync/std",
+    "embassy-embedded-hal/std",
+
+    # "embedded-io/std",
+    # "embedded-io-async/std",
+
+    "critical-section/std",
+    "portable-atomic/std",
+]
+alloc = []
+
 # std = ["embassy-executor/arch-std", "once_cell/std", "critical-section/std"]
 riscv = ["embassy-executor/arch-riscv32"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.13", features = [
-    "rt",
-    "embassy",
-    "eh1",
-    "vectored",
-    "async",
-    "portable-atomic",
-    # "atomic-emulation"
-] }
+esp32c3 = { version = "0.1", path = "esp32c3", optional = true }
+pico-w = { version = "0.1", path = "pico-w", optional = true}
 
-nmea = { workspace = true, features = ["all-sentences"] }
-# IMU that comes on the ESP32-C3-Rust board
-icm42670 = { version = "0.1.1", git = "https://github.com/LechevSpace/icm42670", branch = "feat/embedded-hal-async-rc"}
-# icm42670 = { version = "0.1.1", path = "../../icm42670" }
-shtcx = "0.11"
-# enable async version
-bmp388 = { version = "0.1", features = ["nightly"] }
+panic-probe = { workspace = true, optional = true }
 
-# debugging
-esp-backtrace.workspace = true
-esp-println.workspace = true
-log.workspace = true
-
-# Allocator
-# esp-alloc.workspace = true
-
-# esp-wifi = { workspace = true, optional = true }
-# Keep the same as in esp-wifi
-# embedded-svc = { workspace = true, optional = true }
-
-embassy-executor = { workspace = true, features = ["nightly", "integrated-timers", "executor-thread"] }
+embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
 embassy-sync.workspace = true
 embassy-futures.workspace = true
 embassy-net.workspace = true
@@ -82,17 +106,38 @@ embedded-hal-bus.workspace = true
 embedded-io-async.workspace = true
 embedded-io.workspace = true
 
+nmea = { workspace = true, features = ["all-sentences"] }
+
+# RP2040
+cortex-m = { workspace = true, optional = true }
+cortex-m-rt = { workspace = true, optional = true }
+
+# ESP32C3
+# debugging
+esp-backtrace = { workspace = true, optional = true }
+# esp-println = { workspace = true, optional = true }
+log = { workspace = true, optional = true }
+
+defmt = { workspace = true, optional = true }
+defmt-rtt = { workspace = true, optional = true }
+
+# Allocator
+# esp-alloc.workspace = true
+
+# esp-wifi = { workspace = true, optional = true }
+# Keep the same as in esp-wifi
+# embedded-svc = { workspace = true, optional = true }
+
 static_cell.workspace = true
 # once_cell = { version = "1.17", default-features = false, features = ["critical-section", "atomic-polyfill"] }
 
-critical-section = { workspace = true }
 nb.workspace = true
 heapless.workspace = true
 
 fugit.workspace = true
 
-# Patch for esp32c3 hal crate
-portable-atomic = { workspace = true, features = ["unsafe-assume-single-core"] }
+critical-section = { workspace = true }
+portable-atomic = { workspace = true }
 # defmt-rtt.workspace = true
 # defmt.workspace = true
 

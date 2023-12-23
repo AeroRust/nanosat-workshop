@@ -1,0 +1,42 @@
+[package]
+name = "pico-w"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["rp2040"]
+std = ["critical-section/std"]
+rp2040 = ["embassy-rp/critical-section-impl", "defmt", "embassy-executor/arch-cortex-m"]
+defmt = ["dep:defmt", "dep:defmt-rtt"]
+
+[dependencies]
+# RP2040 embassy hal
+# embassy-executor.workspace = true
+embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
+
+embassy-rp = { workspace = true, optional = true }
+
+# cortex-m for RP2040
+# cortex-m.workspace = true
+# cortex-m-rt.workspace = true
+
+# Embedded hals
+embedded-io-async.workspace = true
+
+# Embassy
+embassy-time.workspace = true
+
+# Defmt logging
+defmt = { workspace = true, optional = true }
+defmt-rtt = { workspace = true, optional = true }
+
+# Cell
+static_cell.workspace = true
+
+# Sensors, peripherals and parsers
+nmea.workspace = true
+heapless.workspace = true
+
+portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"]}
+critical-section.workspace = true

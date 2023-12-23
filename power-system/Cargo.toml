@@ -24,7 +24,7 @@ default = ["embassy-time-systick", "riscv"]
 # wifi = ["esp-wifi"]
 std = ["embassy-executor/arch-std", "critical-section/std"]
 # std = ["embassy-executor/arch-std", "once_cell/std", "critical-section/std"]
-riscv = ["embassy-executor/arch-riscv32"]
+riscv = ["embassy-executor/arch-riscv32", "portable-atomic/unsafe-assume-single-core"]
 
 embassy-time-systick = [
     "hal/embassy-time-systick",
@@ -42,7 +42,7 @@ embassy-time-timg0 = [
 # embassy-time-timg0 = ["embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.13", features = [
+hal = { package = "esp32c3-hal", version = "0.14", features = [
     "rt",
     "embassy",
     "eh1",
@@ -82,7 +82,7 @@ embedded-io-async.workspace = true
 # embedded-can.workspace = true
 
 static_cell.workspace = true
-portable-atomic = { workspace = true, features = ["unsafe-assume-single-core"] }
+portable-atomic = { workspace = true, optional = true }
 
 # required for running tests
 critical-section = { workspace = true }

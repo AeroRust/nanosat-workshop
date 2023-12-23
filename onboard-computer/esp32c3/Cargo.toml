@@ -1,0 +1,39 @@
+[package]
+name = "esp32c3"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = ["embassy-time-systick", "riscv"]
+riscv = ["embassy-executor/arch-riscv32"]
+
+embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
+embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
+
+[dependencies]
+
+hal = { package = "esp32c3-hal", version = "0.14", features = [
+    "rt",
+    "embassy",
+    "eh1",
+    "vectored",
+    "async",
+    # "portable-atomic",
+] }
+
+embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
+embassy-sync.workspace = true
+embassy-futures.workspace = true
+embassy-net.workspace = true
+embassy-net-driver.workspace = true
+embassy-time.workspace = true
+embassy-embedded-hal.workspace = true
+
+# IMU that comes on the ESP32-C3-Rust board
+icm42670 = { workspace = true, optional = true }
+# icm42670 = { version = "0.1.1", path = "../../icm42670" }
+shtcx = { workspace = true, optional = true }
+# enable async version
+bmp388 = { workspace = true, features = ["nightly"], optional = true }

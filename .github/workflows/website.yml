@@ -14,9 +14,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           # Use the same nightly as Embassy!
-          toolchain: nightly-2023-10-02
+          toolchain: nightly-2023-12-20
           components: rust-docs, rust-std, rust-src
-          targets: x86_64-unknown-linux-gnu,riscv32imc-unknown-none-elf
+          targets: x86_64-unknown-linux-gnu,riscv32imc-unknown-none-elf,thumbv6m-none-eabi
       - name: Build docs
         # Directly put the docs inside `docs/skeleton`
         run: cargo website-docs

@@ -995,7 +995,8 @@ async fn run_uart_plotter(mut usb_serial_jtag: UsbSerialJtag<'static>, uart_pipe
 
 const MEASURE_PRESSURE_EVERY: Duration = Duration::from_millis(100);
 
-/// We are using the BMP388 barometric pressure sensor using a DFRobot
+/// Exercise: TBD
+/// We are using the BMP388 barometric pressure sensor using a DFRobot breakout board
 ///
 ///
 /// ## DFRobot BMP388 board

@@ -2,4 +2,8 @@
 # Embassy uses this nightly.
 # Rust nightly for rev. `4b25258`
 # KEEP UP TO DATE with the `website` workflow!
-channel = "nightly-2023-10-02"
+# channel = "nightly-2023-10-02"
+channel = "nightly-2023-12-20"
+
+
+targets = ["thumbv6m-none-eabi", "riscv32imc-unknown-none-elf"]

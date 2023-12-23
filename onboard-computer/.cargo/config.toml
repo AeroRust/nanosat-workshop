@@ -32,16 +32,10 @@ rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-pag
 # target = "riscv32imc-unknown-none-elf"
 
 [alias]
-# rb = "run --target riscv32imc-unknown-none-elf --bin"
-# rrb = "run --target riscv32imc-unknown-none-elf --release --bin"
-# t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
-
-website-docs = "doc --no-deps --workspace --target-dir ./docs/skeleton --document-private-items"
-
-
 # [build]
 # target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
-# run-firmware = "run --target thumbv6m-none-eabi --no-default-features -F firmware"
+esp32-c3 = "run --target riscv32imc-unknown-none-elf --release --no-default-features -F esp32-c3"
+pico-w = "run --target thumbv6m-none-eabi --release --no-default-features -F pico-w"
 
 
 
