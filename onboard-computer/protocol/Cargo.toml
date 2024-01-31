@@ -1,0 +1,51 @@
+[package]
+name = "protocol"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["BMP388", "BNO055", "GNSS", "serde", "postcard"]
+# default = []
+
+std = ["serde?/std"]
+
+defmt-03 = ["dep:defmt", "bmp388?/defmt-03", "bno055?/defmt-03", "nmea/defmt-03"]
+serde = ["dep:serde", "bno055?/serde", "bmp388?/serde", "nmea/serde"]
+postcard = ["dep:postcard","dep:postcard-rpc", "serde"]
+
+pressure-and-temperature = []
+BMP388 = ["dep:bmp388"]
+
+imu = []
+BNO055 = ["dep:bno055"]
+
+nmea = ["dep:nmea"]
+GNSS = ["nmea"]
+
+bin = ["dep:serde_json", "dep:chrono"]
+
+[[bin]]
+name = "radio_to_json_log"
+# src = "bin/radio_to_json_log.rs"
+required-features = ["postcard", "BNO055", "BMP388", "bin"]
+
+[dependencies]
+serde = { workspace = true, default-features = false, optional = true }
+postcard = { workspace = true, optional = true }
+postcard-rpc = { workspace = true, optional = true }
+
+defmt = { workspace = true, optional = true }
+
+# Sensors, peripherals and parsers
+# Pressure and Temperature sensor
+bmp388 = { workspace = true, optional = true, features = ["asynch", "config-builder"] }
+# IMU
+bno055 = { workspace = true, optional = true }
+# Parsing NMEA 0183 senteneces from GNSS receiver
+nmea = { workspace = true, optional = true, default-features = false, features = ["all-sentences"] }
+
+serde_json = { version = "1", optional = true }
+chrono = { version = "0.4", features = ["serde"], optional = true }
+
+# [dev-dependencies]

@@ -1,77 +1,158 @@
 [package]
 name = "onboard-computer"
 version = "0.1.0"
-authors = [
-    "Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>",
-]
+authors = ["Lechev.space <dev@lechev.space>, Lachezar Lechev <elpiel93@gmail.com>"]
 license = "MIT OR Apache-2.0"
 
 edition = "2021"
 publish = false
 
+default-run = "onboard-computer"
+
 [features]
-default = ["embassy-time-timg0", "riscv"]
+# default = ["riscv", "run-gnss", "run-pressure-and-temperature"]
+# default = ["riscv"]
 
-embassy-time-systick = [
-    "hal/embassy-time-systick",
-    "embassy-time/tick-hz-16_000_000",
+# esp32-c3 = ["riscv", "dep:shtcx", "dep:icm42670", "dep:log", "dep:esp-backtrace",
+esp32-c3 = ["riscv", "dep:log", "dep:esp-backtrace",
+    "esp32c3",
+    # either
+    "esp32c3/embassy-time-systick", # or "embassy-time-timg0"
+    "portable-atomic/unsafe-assume-single-core"
 ]
-embassy-time-timg0 = [
-    "hal/embassy-time-timg0",
-    "embassy-time/tick-hz-1_000_000",
+pico-w = ["cortex-m", "rp2040", "defmt", "dep:pico-w"]
+# default = ["firmware"]
+
+cortex-m = ["dep:cortex-m", "dep:cortex-m-rt", "dep:panic-probe"]
+rp2040 = [
+    # "embassy-rp/critical-section-impl",
+    # "embassy-rp/rt",
+    # "embassy-rp/time-driver",
+    # "embassy-executor/arch-cortex-m",
+    "portable-atomic/critical-section",
+    "portable-atomic/require-cas",
 ]
 
-wifi = ["esp-wifi"]
+# Enables the GNSS receiver in code
+# run-gnss = []
 
-std = ["embassy-executor/arch-std", "critical-section/std"]
+# TODO: Add `run-humidity-and-temperature` once there is support for Async
+# run-sensors = ["run-imu", "run-pressure-and-temperature"]
+# Enables the IMU sensor readings (icm42670)
+# run-imu = []
+
+# Enables the Humidity + Temperature sensor readings (shtc3)
+# run-humidity-and-temperature = []
+
+# Enables the Pressure + Temperature sensor readings (BMP388)
+# run-pressure-and-temperature = []
+
+# wifi = ["esp-wifi"]
+
+defmt = [
+    "dep:defmt",
+    "dep:defmt-rtt",
+    # "heapless/defmt-impl",
+    # "panic-probe/print-defmt",
+    # "embassy-sync/defmt",
+    # "embassy-executor/defmt",
+    # "embassy-time/defmt",
+    # "embassy-embedded-hal/defmt",
+    # "embassy-time/defmt-timestamp-uptime",
+    # "embassy-rp/defmt",
+    # "embassy-usb/defmt",
+    # "embassy-net/defmt",
+    # "embedded-hal-async/defmt-03",
+    # "embedded-io/defmt-03",
+    # "embedded-io-async/defmt-03",
+]
+
+std = [
+    "alloc",
+    # "embassy-executor/arch-std",
+    # "embassy-time/std",
+    # "embassy-sync/std",
+    # "embassy-embedded-hal/std",
+
+    # "embedded-io/std",
+    # "embedded-io-async/std",
+
+    "critical-section/std",
+    "portable-atomic/std",
+    "serde?/std"
+]
+alloc = ["postcard/alloc"]
+
 # std = ["embassy-executor/arch-std", "once_cell/std", "critical-section/std"]
-riscv = ["embassy-executor/arch-riscv32"]
+riscv = [
+    # "embassy-executor/arch-riscv32"
+]
+
+serde = ["dep:serde"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.8", features = [
-    "rt",
-    "embassy",
-    "eh1",
-    "vectored",
-    "async",
-] }
+esp32c3 = { version = "0.1", path = "esp32c3", optional = true }
+pico-w = { version = "0.1", path = "pico-w", optional = true}
 
-nmea = "0.5.0"
+panic-probe = { workspace = true, optional = true }
+serde = { workspace = true, optional = true, default-features = false }
+postcard = { workspace = true, optional = true }
+postcard-rpc = { workspace = true, optional = true }
 
-# nmea.workspace = true
+# embassy-executor = { workspace = true, features = ["integrated-timers", "executor-interrupt", "executor-thread"] }
+# embassy-sync.workspace = true
+# embassy-futures.workspace = true
+# embassy-net.workspace = true
+# embassy-net-driver.workspace = true
+# embassy-time.workspace = true
+# embassy-embedded-hal.workspace = true
 
+# embedded-hal.workspace = true
+# embedded-hal-1.workspace = true
+# embedded-hal-async.workspace = true
+# embedded-hal-nb.workspace = true
+# embedded-hal-bus.workspace = true
+# # embedded-can.workspace = true
+# embedded-io-async.workspace = true
+# embedded-io.workspace = true
+
+# nmea = { workspace = true, features = ["all-sentences"] }
+
+# RP2040
+# cortex-m = { version = "0.7" }
+
+cortex-m = { version = "0.7", optional = true }
+cortex-m-rt = { version = "0.7.3", optional = true }
+
+# ESP32C3
 # debugging
-esp-backtrace.workspace = true
-esp-println.workspace = true
+esp-backtrace = { workspace = true, optional = true }
+esp-println = { workspace = true, optional = true }
+log = { workspace = true, optional = true }
+
+defmt = { workspace = true, optional = true }
+defmt-rtt = { workspace = true, optional = true }
 
 # Allocator
 # esp-alloc.workspace = true
 
-esp-wifi = { workspace = true, optional = true }
+# esp-wifi = { workspace = true, optional = true }
 # Keep the same as in esp-wifi
-embedded-svc = { workspace = true, optional = true }
-
-embassy-executor = { workspace = true }
-embassy-sync.workspace = true
-embassy-futures.workspace = true
-embassy-net.workspace = true
-embassy-net-driver.workspace = true
-embassy-time.workspace = true
-
-embedded-hal.workspace = true
-embedded-hal-1.workspace = true
-embedded-hal-async.workspace = true
-embedded-hal-nb.workspace = true
-embedded-can.workspace = true
+# embedded-svc = { workspace = true, optional = true }
 
 static_cell.workspace = true
 # once_cell = { version = "1.17", default-features = false, features = ["critical-section", "atomic-polyfill"] }
 
-critical-section = { workspace = true }
-nb.workspace = true
 heapless.workspace = true
 
 fugit.workspace = true
 
-defmt-rtt.workspace = true
-defmt.workspace = true
+# critical-section = { workspace = true }
+critical-section = { version = "1.1" }
+portable-atomic = { workspace = true }
+# defmt-rtt.workspace = true
+# defmt.workspace = true
+
+# [patch.crates-io]
+
+# icm42670 = { version = "0.1", path = "../icm42670" }

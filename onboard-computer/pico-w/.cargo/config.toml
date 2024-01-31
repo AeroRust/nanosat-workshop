@@ -1,0 +1,19 @@
+[env]
+DEFMT_LOG = "info"
+
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = "probe-run --chip RP2040"
+# runner = "elf2uf2-rs -d"
+
+[build]
+target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
+
+rustdocflags = [
+    "--enable-index-page",
+    "-Z", "unstable-options",
+    "--cfg", "docsrs",
+]
+
+[alias]
+# run-firmware = "run --target thumbv6m-none-eabi --no-default-features -F firmware"
+run-pico-w = "run --target thumbv6m-none-eabi --no-default-features -F rp2040"

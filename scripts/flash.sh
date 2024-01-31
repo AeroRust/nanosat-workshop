@@ -18,6 +18,6 @@ case "$1" in
     ;;
 esac
 
-export ESP_ARCH=riscv32imac-unknown-none-elf
+export ESP_ARCH=riscv32imc-unknown-none-elf
 
 web-flash --chip esp32c3 target/${ESP_ARCH}/${BUILD_MODE}/nanosat_workshop

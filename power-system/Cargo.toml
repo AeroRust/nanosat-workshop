@@ -15,13 +15,16 @@ default-run = "power-system"
 # "feature `embassy-time-systick` includes `esp32c3-hal:embassy-time-systick` which is neither a dependency nor another feature"
 # default = ["embassy-time-systick", "defmt"]
 # default = ["embassy-time-timg0"]
-default = ["embassy-time-timg0", "riscv"]
+# default = ["embassy-time-timg0", "riscv"]
+# systick for time by default
+default = ["embassy-time-systick", "riscv"]
+# default = ["riscv"]
 # default = ["defmt", "embassy-time-timg0", "wifi"]
 
-wifi = ["esp-wifi"]
+# wifi = ["esp-wifi"]
 std = ["embassy-executor/arch-std", "critical-section/std"]
 # std = ["embassy-executor/arch-std", "once_cell/std", "critical-section/std"]
-riscv = ["embassy-executor/arch-riscv32"]
+riscv = ["embassy-executor/arch-riscv32", "portable-atomic/unsafe-assume-single-core"]
 
 embassy-time-systick = [
     "hal/embassy-time-systick",
@@ -39,17 +42,13 @@ embassy-time-timg0 = [
 # embassy-time-timg0 = ["embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.9", features = [
+hal = { package = "esp32c3-hal", version = "0.15", features = [
     "rt",
     "embassy",
     "eh1",
     "vectored",
     "async",
 ] }
-# hal.workspace = true
-# esp32c3.workspace = true
-
-# nanosat = { path = "../nanosat" }
 
 # debugging
 esp-backtrace.workspace = true
@@ -58,9 +57,9 @@ esp-println.workspace = true
 # Allocator
 # esp-alloc.workspace = true
 
-esp-wifi = { workspace = true, optional = true }
+# esp-wifi = { workspace = true, optional = true }
 # Keep the same as in esp-wifi
-embedded-svc = { workspace = true, optional = true }
+# embedded-svc = { workspace = true, optional = true }
 
 # Embassy
 # embassy latest main ref: f9c0c53
@@ -75,24 +74,24 @@ embassy-net.workspace = true
 embassy-net-driver.workspace = true
 embassy-time.workspace = true
 
+embedded-hal-02.workspace = true
 embedded-hal.workspace = true
-embedded-hal-1.workspace = true
 embedded-hal-async.workspace = true
 embedded-hal-nb.workspace = true
-embedded-can.workspace = true
+embedded-io-async.workspace = true
+# embedded-can.workspace = true
 
 static_cell.workspace = true
-# once_cell = { version = "1", default-features = false, features = ["critical-section", "atomic-polyfill"] }
+portable-atomic = { workspace = true, optional = true }
 
 # required for running tests
-# critical-section = { workspace = true, optional = true, default-features = false }
 critical-section = { workspace = true }
 nb.workspace = true
 heapless.workspace = true
 
 fugit.workspace = true
 
-defmt-rtt.workspace = true
+# defmt-rtt.workspace = true
 defmt.workspace = true
 
 [dev-dependencies]

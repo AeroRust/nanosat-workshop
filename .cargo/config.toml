@@ -1,52 +1,47 @@
-[target.riscv32imac-unknown-none-elf]
-runner = "espflash --monitor"
+[env]
+# ESP_LOGLEVEL="warn"
+ESP_LOGLEVEL="info"
+DEFMT_LOG = "info"
+
+[target.riscv32imc-unknown-none-elf]
+runner = "espflash flash --monitor"
+
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = "probe-run --chip RP2040"
+# runner = "elf2uf2-rs -d"
+
+# [target.riscv32imc-unknown-none-elf]
+# runner = "espflash flash --monitor"
 
 [build]
-rustflags = [
-  "-C",
-  "link-arg=-Tlinkall.x",
+# rustflags = [
+#   "-C",
+#   "link-arg=-Tlinkall.x",
 
-  # Required to obtain backtraces (e.g. when using the "esp-backtrace" crate.)
-  # NOTE: May negatively impact performance of produced code
-  "-C",
-  "force-frame-pointers",
+#   # Required to obtain backtraces (e.g. when using the "esp-backtrace" crate.)
+#   # NOTE: May negatively impact performance of produced code
+#   "-C",
+#   "force-frame-pointers",
 
-  # Atomic emulation
+#   # WiFi
+#   # "-C", "link-arg=-Trom_functions.x",
+# ]
 
-  # comment the cfgs below if you do _not_ wish to emulate atomics.
-  # enable the atomic codegen option for RISCV
-  "-C",
-  "target-feature=+a",
-  # tell the core library have atomics even though it's not specified in the target definition
-  "--cfg",
-  "target_has_atomic_load_store",
-  "--cfg",
-  'target_has_atomic_load_store="8"',
-  "--cfg",
-  'target_has_atomic_load_store="16"',
-  "--cfg",
-  'target_has_atomic_load_store="32"',
-  "--cfg",
-  'target_has_atomic_load_store="ptr"',
-  # enable cas
-  "--cfg",
-  "target_has_atomic",
-  "--cfg",
-  'target_has_atomic="8"',
-  "--cfg",
-  'target_has_atomic="16"',
-  "--cfg",
-  'target_has_atomic="32"',
-  "--cfg",
-  'target_has_atomic="ptr"',
-]
+rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
 
-target = "riscv32imac-unknown-none-elf"
-
-[unstable]
-build-std = ["alloc", "core"]
+# target = "riscv32imc-unknown-none-elf"
 
 [alias]
-rb = "run --target riscv32imac-unknown-none-elf --bin"
-rrb = "run --target riscv32imac-unknown-none-elf --release --bin"
-t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
+# rb = "run --target riscv32imc-unknown-none-elf --bin"
+# rrb = "run --target riscv32imc-unknown-none-elf --release --bin"
+# t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
+
+website-docs = "doc --no-deps --workspace --target-dir ./docs/skeleton --document-private-items"
+
+
+# [build]
+# target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
+# run-firmware = "run --target thumbv6m-none-eabi --no-default-features -F firmware"
+
+
+

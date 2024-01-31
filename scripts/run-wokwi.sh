@@ -26,7 +26,7 @@ elif [ "${CODESPACE_NAME}" != "" ]; then
     export WOKWI_HOST=${CODESPACE_NAME}-9012.githubpreview.dev
 fi
 
-export ESP_ARCH=riscv32imac-unknown-none-elf
+export ESP_ARCH=riscv32imc-unknown-none-elf
 
 # TODO: Update with your Wokwi Project
 export WOKWI_PROJECT_ID=""

@@ -11,11 +11,11 @@ pub static MOCK_SENTENCES: &'static str = include_str!("../../tests/nmea.log");
 
 pub struct NmeaReceiver {
     mock_sentences: Mutex<CriticalSectionRawMutex, Cycle<Lines<'static>>>,
-    rng: Mutex<CriticalSectionRawMutex, Rng<'static>>,
+    rng: Mutex<CriticalSectionRawMutex, Rng>,
 }
 
 impl NmeaReceiver {
-    pub fn new(rng: Mutex<CriticalSectionRawMutex, Rng<'static>>) -> Self {
+    pub fn new(rng: Mutex<CriticalSectionRawMutex, Rng>) -> Self {
         let sentences_iterator = MOCK_SENTENCES.lines().cycle();
 
         Self {

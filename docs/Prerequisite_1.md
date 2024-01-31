@@ -5,7 +5,7 @@
    - [Generating a new SSH key and adding it to the ssh-agent (Github)][github-generate-ssh-key]
    - [Adding a new SSH key to your GitHub account][github-add-key-to-account]
 3. Clone repository: `git clone git@github.com:LechevSpace/nanosat-workshop.git`
-4. Install RiscV toolchain: `rustup target install riscv32imac-unknown-none-elf`
+4. Install RiscV toolchain: `rustup target install riscv32imc-unknown-none-elf`
 5. Build the application: `cd nanosat-workshop && cargo build`
 
 [rust-install]: https://www.rust-lang.org/tools/install

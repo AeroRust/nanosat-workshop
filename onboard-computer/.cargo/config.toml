@@ -1,0 +1,40 @@
+[env]
+# ESP_LOGLEVEL="warn"
+ESP_LOGLEVEL="info"
+DEFMT_LOG = "info"
+
+[target.riscv32imc-unknown-none-elf]
+runner = "espflash flash --monitor"
+
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = "probe-run --chip RP2040"
+# runner = "elf2uf2-rs -d"
+
+[build]
+# rustflags = [
+#   "-C",
+#   "link-arg=-Tlinkall.x",
+
+#   # Required to obtain backtraces (e.g. when using the "esp-backtrace" crate.)
+#   # NOTE: May negatively impact performance of produced code
+#   "-C",
+#   "force-frame-pointers",
+
+#   # WiFi
+#   # "-C", "link-arg=-Trom_functions.x",
+# ]
+
+rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
+
+# [build]
+# target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
+# target = "riscv32imc-unknown-none-elf"
+
+[alias]
+esp32-c3 = "run --target riscv32imc-unknown-none-elf --release --no-default-features -F esp32-c3"
+pico-w = "run --target thumbv6m-none-eabi --release --no-default-features -F pico-w"
+
+# Building locally:
+# for `--enable-index-page` it is required to pass `-Z unstable-options` to rustdocs
+docs-pico-w = "doc --target thumbv6m-none-eabi --release --no-default-features --document-private-items -p onboard-computer -F pico-w -p pico-w"
+
