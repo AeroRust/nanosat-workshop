@@ -42,7 +42,7 @@ embassy-time-timg0 = [
 # embassy-time-timg0 = ["embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
-hal = { package = "esp32c3-hal", version = "0.14", features = [
+hal = { package = "esp32c3-hal", version = "0.15", features = [
     "rt",
     "embassy",
     "eh1",
@@ -74,8 +74,8 @@ embassy-net.workspace = true
 embassy-net-driver.workspace = true
 embassy-time.workspace = true
 
+embedded-hal-02.workspace = true
 embedded-hal.workspace = true
-embedded-hal-1.workspace = true
 embedded-hal-async.workspace = true
 embedded-hal-nb.workspace = true
 embedded-io-async.workspace = true

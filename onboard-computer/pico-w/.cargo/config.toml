@@ -15,4 +15,5 @@ rustdocflags = [
 ]
 
 [alias]
-run-firmware = "run --target thumbv6m-none-eabi --no-default-features -F firmware"
+# run-firmware = "run --target thumbv6m-none-eabi --no-default-features -F firmware"
+run-pico-w = "run --target thumbv6m-none-eabi --no-default-features -F rp2040"

@@ -10,9 +10,6 @@ runner = "espflash flash --monitor"
 runner = "probe-run --chip RP2040"
 # runner = "elf2uf2-rs -d"
 
-# [target.riscv32imc-unknown-none-elf]
-# runner = "espflash flash --monitor"
-
 [build]
 # rustflags = [
 #   "-C",
@@ -29,13 +26,15 @@ runner = "probe-run --chip RP2040"
 
 rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
 
+# [build]
+# target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
 # target = "riscv32imc-unknown-none-elf"
 
 [alias]
-# [build]
-# target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
 esp32-c3 = "run --target riscv32imc-unknown-none-elf --release --no-default-features -F esp32-c3"
 pico-w = "run --target thumbv6m-none-eabi --release --no-default-features -F pico-w"
 
-
+# Building locally:
+# for `--enable-index-page` it is required to pass `-Z unstable-options` to rustdocs
+docs-pico-w = "doc --target thumbv6m-none-eabi --release --no-default-features --document-private-items -p onboard-computer -F pico-w -p pico-w"
 
