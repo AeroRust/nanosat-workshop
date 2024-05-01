@@ -22,17 +22,16 @@ shtcx = ["dep:shtcx"]
 run-gnss = ["LC76G"]
 LC76G = ["dep:lc76g", "dep:nmea"]
 
-embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
+embassy-time-systick = ["hal/embassy-time-systick-16mhz", "embassy-time/tick-hz-16_000_000"]
+# embassy-time-systick = ["embassy-time/tick-hz-16_000_000"]
 embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
 
-hal = { package = "esp32c3-hal", version = "0.15", features = [
-    "rt",
+hal = { package = "esp-hal", version = "0.17", features = [
     "embassy",
-    "eh1",
-    "vectored",
     "async",
+    "esp32c3",
     # "portable-atomic",
 ] }
 
