@@ -1,16 +1,7 @@
 #![cfg_attr(not(any(feature = "std", test)), no_std)]
+#![feature(type_alias_impl_trait)]
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#[doc(inline)]
+use application::Application;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub mod application;

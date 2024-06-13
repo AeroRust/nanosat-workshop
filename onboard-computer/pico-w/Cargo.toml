@@ -5,21 +5,52 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
-default = ["rp2040"]
+# default = ["rp2040", "run-gnss"]
+# default = ["rp2040", "run-radio"]
+default = ["rp2040", "run-gnss", "run-pressure-and-temperature", "run-radio", "run-imu"]
+# default = ["rp2040", "run-pressure-and-temperature", "run-radio"]
+# default = ["rp2040", "run-pressure-and-temperature", "run-radio", "run-imu"]
+
+dummy-print = []
+# default = ["rp2040", "run-pressure-and-temperature"]
+run-gnss = ["LC76G"]
+LC76G = ["dep:lc76g", "dep:nmea"]
+
+run-pressure-and-temperature = ["BMP388"]
+BMP388 = ["dep:bmp388", "protocol/BMP388"]
+
+run-radio = ["cyw43"]
+# Infineon CYW43439
+cyw43 = ["dep:cyw43", "dep:cyw43-pio"]
+
+run-voc-index = ["SGP40"]
+SGP40 = ["dep:sgp40"]
+
+run-air-quality = ["BME688"]
+BME688 = ["dep:bme68x-rust"]
+
+run-imu = ["BNO055"]
+BNO055 = ["dep:bno055"]
+
 std = ["critical-section/std"]
-rp2040 = ["embassy-rp/critical-section-impl", "defmt", "embassy-executor/arch-cortex-m"]
-defmt = ["dep:defmt", "dep:defmt-rtt"]
+rp2040 = ["cortex-m", "embassy-rp/critical-section-impl", "defmt", "embassy-executor/arch-cortex-m", "dep:embassy-net"]
+cortex-m = ["dep:cortex-m", "dep:cortex-m-rt", "dep:panic-probe"]
+defmt = ["dep:defmt", "dep:defmt-rtt", "protocol/defmt-03", "cyw43?/defmt", "cyw43-pio?/defmt", "embassy-executor/defmt", "embassy-sync/defmt", "embassy-rp?/defmt", "embassy-net?/defmt", "embassy-embedded-hal/defmt", "embassy-time/defmt-timestamp-uptime"]
 
 [dependencies]
 # RP2040 embassy hal
+embassy-rp = { workspace = true, optional = true, features = ["unstable-pac", "time-driver", "critical-section-impl"] }
+embassy-net = { workspace = true, optional = true }
 # embassy-executor.workspace = true
-embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
-
-embassy-rp = { workspace = true, optional = true }
+embassy-executor = { workspace = true, features = ["nightly", "integrated-timers", "executor-thread", "executor-interrupt"] }
+embassy-futures = { workspace = true }
+embassy-sync = { workspace = true }
+embassy-embedded-hal = { workspace = true }
 
 # cortex-m for RP2040
-# cortex-m.workspace = true
-# cortex-m-rt.workspace = true
+cortex-m = { workspace = true, optional = true }
+cortex-m-rt = { workspace = true, optional = true }
+panic-probe = { workspace = true, optional = true }
 
 # Embedded hals
 embedded-io-async.workspace = true
@@ -34,9 +65,37 @@ defmt-rtt = { workspace = true, optional = true }
 # Cell
 static_cell.workspace = true
 
+# Serialization
+serde = { workspace = true, default-features = false }
+postcard = { workspace = true }
+postcard-rpc = { workspace = true }
+# serde = { workspace = true, optional = true, default-features = false }
+# postcard = { workspace = true, optional = true }
+# postcard-rpc = { workspace = true, optional = true }
+
+protocol = { version = "0.1", path = "../protocol", features = ["postcard", "defmt-03"]}
+
 # Sensors, peripherals and parsers
-nmea.workspace = true
+# Pressure and Temperature sensor - enable async version
+bmp388 = { workspace = true, optional = true, features = ["asynch", "config-builder", "serde", "defmt-03"] }
+bme68x-rust = { workspace = true, optional = true }
+bno055 = { workspace = true, optional = true }
+sgp40 = { workspace = true, optional = true }
+# GNSS receiver with NMEA 0183 sentences
+lc76g = { workspace = true, optional = true }
+# Pico W WiFi
+cyw43 = { workspace = true, features = ["firmware-logs"], optional = true }
+cyw43-pio = { workspace = true, features = ["overclock"], optional = true }
+
+# Parsing NMEA 0183 senteneces from GNSS receiver
+nmea = { workspace = true, optional = true }
+
 heapless.workspace = true
+# dotenv.workspace = true
+# num-traits = { version = "0.2", default-features = false, features = ["libm"]}
 
 portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"]}
 critical-section.workspace = true
+
+[build-dependencies]
+dotenv = "0.15"

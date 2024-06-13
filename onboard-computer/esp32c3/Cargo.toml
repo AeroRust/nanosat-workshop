@@ -6,15 +6,28 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["embassy-time-systick", "riscv"]
-riscv = ["embassy-executor/arch-riscv32"]
+default = ["embassy-time-systick", "riscv", "run-imu", "run-gnss", "run-pressure-and-temperature", "run-temperature-and-humidity", "log"]
+riscv = ["embassy-executor/arch-riscv32", "dep:esp-println"]
+
+run-imu = ["ICM42670"]
+ICM42670 = ["dep:icm42670"]
+
+run-pressure-and-temperature = ["BMP388"]
+BMP388 = ["dep:bmp388"]
+
+run-temperature-and-humidity = ["shtcx"]
+# todo: fix with proper sensor name
+shtcx = ["dep:shtcx"]
+
+run-gnss = ["LC76G"]
+LC76G = ["dep:lc76g", "dep:nmea"]
 
 embassy-time-systick = ["hal/embassy-time-systick", "embassy-time/tick-hz-16_000_000"]
 embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
 
-hal = { package = "esp32c3-hal", version = "0.14", features = [
+hal = { package = "esp32c3-hal", version = "0.15", features = [
     "rt",
     "embassy",
     "eh1",
@@ -22,6 +35,12 @@ hal = { package = "esp32c3-hal", version = "0.14", features = [
     "async",
     # "portable-atomic",
 ] }
+
+# ESP32C3
+# debugging
+# esp-backtrace = { workspace = true, optional = true }
+esp-println = { workspace = true, optional = true }
+log = { workspace = true, optional = true }
 
 embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
 embassy-sync.workspace = true
@@ -31,9 +50,27 @@ embassy-net-driver.workspace = true
 embassy-time.workspace = true
 embassy-embedded-hal.workspace = true
 
+embedded-io-async.workspace = true
+embedded-hal-bus.workspace = true
+
+# Sensors, peripherals and parsers
 # IMU that comes on the ESP32-C3-Rust board
 icm42670 = { workspace = true, optional = true }
 # icm42670 = { version = "0.1.1", path = "../../icm42670" }
 shtcx = { workspace = true, optional = true }
-# enable async version
-bmp388 = { workspace = true, features = ["nightly"], optional = true }
+# Pressure and Temperature sensor - enable async version
+bmp388 = { workspace = true, features = ["asynch"], optional = true }
+# GNSS receiver with NMEA 0183 sentences
+lc76g = { workspace = true, optional = true }
+
+# Parsing NMEA 0183 senteneces from GNSS receiver
+nmea = { workspace = true, optional = true }
+
+heapless.workspace = true
+
+static_cell.workspace = true
+
+critical-section = { workspace = true }
+portable-atomic = { workspace = true }
+# portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"]}
+# critical-section.workspace = true
