@@ -12,18 +12,14 @@ fn main() {
     // Load the Wifi network SSID and password
     // https://doc.rust-lang.org/cargo/reference/build-scripts.html#rustc-env
     {
+        println!("cargo::rerun-if-changed=../.env");
+
         dotenv::dotenv().ok();
 
-        let wifi_network_env = "WIFI_NETWORK";
-        let wifi_password_env = "WIFI_PASSWORD";
-        println!(
-            "cargo:rustc-env={wifi_network_env}={}",
-            dotenv::var(wifi_network_env).unwrap()
-        );
-        println!(
-            "cargo:rustc-env={wifi_password_env}={}",
-            dotenv::var(wifi_password_env).unwrap()
-        );
+        for (env_var, env_value) in dotenv::vars() {
+            println!("cargo:rustc-env={env_var}={env_value}");
+            println!("cargo:rerun-if-env-changed={env_var}");
+        }
     }
 
     #[cfg(feature = "rp2040")]

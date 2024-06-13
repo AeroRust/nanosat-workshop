@@ -156,3 +156,6 @@ portable-atomic = { workspace = true }
 # [patch.crates-io]
 
 # icm42670 = { version = "0.1", path = "../icm42670" }
+
+[build-dependencies]
+dotenv = "0.15"

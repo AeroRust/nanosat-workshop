@@ -2,7 +2,7 @@
 DEFMT_LOG = "info"
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
-runner = "probe-run --chip RP2040"
+runner = "probe-rs run --chip RP2040"
 # runner = "elf2uf2-rs -d"
 
 [build]
@@ -17,3 +17,4 @@ rustdocflags = [
 [alias]
 # run-firmware = "run --target thumbv6m-none-eabi --no-default-features -F firmware"
 run-pico-w = "run --target thumbv6m-none-eabi --no-default-features -F rp2040"
+
