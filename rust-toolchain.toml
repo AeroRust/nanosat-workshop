@@ -1,8 +1,8 @@
 [toolchain]
 # Embassy uses this nightly.
-# Rust nightly for rev. `c1ba008`
+# Rust nightly for rev. `e61136f`
 # KEEP UP TO DATE with the `website` workflow!
-channel = "nightly-2023-12-20"
+channel = "nightly-2024-05-20"
 
 
 targets = ["thumbv6m-none-eabi", "riscv32imc-unknown-none-elf"]
