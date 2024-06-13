@@ -1,7 +1,11 @@
 #![cfg_attr(not(any(feature = "std", test)), no_std)]
 
-#[cfg(feature = "postcard")]
-use postcard::experimental::schema::Schema;
+pub use median::calculate_median;
+
+mod median;
+
+// #[cfg(feature = "postcard")]
+// use postcard::experimental::schema::Schema;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -9,6 +13,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SendPacket {
+    // TODO: Change to SocketAddrV4
     pub remote: ([u8; 4], u16),
     pub message: SendMessage,
 }
@@ -40,12 +45,53 @@ pub enum SendMessage {
         /// Returns current gyroscope data in deg/s units. Available only in modes in which gyroscope is enabled.
         #[cfg_attr(feature = "defmt-03", defmt(Debug2Format))]
         gyro_data: bno055::mint::Vector3<f32>,
-        /// Gets a quaternion (mint::Quaternion<f32>) reading from the BNO055. Must be in a sensor fusion (IMU) operating mode.
+        /// Gets a quaternion ([`bno055::mint::Quaternion<f32>`]) reading from the BNO055.
+        /// Must be in a sensor fusion (IMU) operating mode.
         #[cfg_attr(feature = "defmt-03", defmt(Debug2Format))]
         quaternion: bno055::mint::Quaternion<f32>,
     },
     #[cfg(feature = "GNSS")]
     GnssData(GnssData),
+    #[cfg(feature = "status")]
+    /// Device status
+    Status(Status),
+}
+
+#[cfg(feature = "status")]
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+// #[cfg_attr(feature = "serde", serde(untagged))]
+#[derive(Debug)]
+pub struct Status {
+    pub internal_temperature: f32,
+    /// Will be None if we are powered by VBUS (USB)
+    pub battery: Option<Battery>,
+    /// # Returns
+    ///
+    /// `Some(true)` or `Some(false)` to indicated that USB feature (`run-usb`) is **enabled**
+    /// and the status of the USB connection is Connected (`true`) or Not connected (`false`)
+    /// respectively.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub usb_connected: Option<bool>,
+    /// # Returns
+    ///
+    /// `Some(true)` or `Some(false)` to indicated that USB feature (`run-usb`) is **enabled**
+    /// and the status of the WIFI is Connected (`true`) or Not connected (`false`)
+    /// respectively to the WIFI network provided in the firmware.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub radio_connected: Option<bool>,
+}
+
+#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Battery {
+    /// Single measured median voltage at provided ADC pin for XXXXX times between XXXX ms each.
+    ///
+    /// Should be between 0V & 3V3 for the Pico!
+    pub voltage: f32,
+    /// 
+    pub percentage: u8,
 }
 
 #[cfg(feature = "GNSS")]

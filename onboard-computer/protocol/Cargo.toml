@@ -5,7 +5,7 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
-default = ["BMP388", "BNO055", "GNSS", "serde", "postcard"]
+default = ["BMP388", "BNO055", "GNSS", "serde", "postcard", "status"]
 # default = []
 
 std = ["serde?/std"]
@@ -22,6 +22,8 @@ BNO055 = ["dep:bno055"]
 
 nmea = ["dep:nmea"]
 GNSS = ["nmea"]
+
+status = []
 
 bin = ["dep:serde_json", "dep:chrono"]
 
@@ -47,5 +49,7 @@ nmea = { workspace = true, optional = true, default-features = false, features =
 
 serde_json = { version = "1", optional = true }
 chrono = { version = "0.4", features = ["serde"], optional = true }
+
+heapless = { version = "0.8" }
 
 # [dev-dependencies]

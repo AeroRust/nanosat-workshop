@@ -21,8 +21,13 @@ fn main() {
         let message = protocol::SendMessage::from_radio(&parsed_log_binary.message)
             .expect(&format!("Line {line} from radio binary error"));
 
+        let log_message = LogRecord {
+            time: parsed_log_binary.time,
+            message,
+        };
+
         let json_line =
-            serde_json::to_string(&message).expect(&format!("Line {line} to parsed json error"));
+            serde_json::to_string(&log_message).expect(&format!("Line {line} to parsed json error"));
         new_json.push_str(&json_line);
         new_json.push('\n');
     }

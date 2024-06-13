@@ -1,6 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(not(feature = "std"), no_main)]
 #![feature(type_alias_impl_trait)]
+#![feature(impl_trait_in_assoc_type)]
 
 #[cfg(feature = "esp32-c3")]
 use esp_backtrace as _;
@@ -13,11 +14,8 @@ use cortex_m_rt::{exception, ExceptionFrame};
 #[cfg(feature = "cortex-m")]
 use panic_probe as _;
 
-
 #[cfg(feature = "esp32-c3")]
 use hal::peripherals::Peripherals;
-
-use static_cell::make_static;
 
 #[cfg(feature = "esp32-c3")]
 use esp32_c3::Application;
@@ -33,7 +31,7 @@ fn main() -> ! {
     esp_println::logger::init_logger_from_env();
     log::info!("Logger is setup");
 
-    let executor = make_static!(Executor::new());
+    let executor = static_cell::make_static!(Executor::new());
 
     Application::init(peripherals).run(executor)
 }
