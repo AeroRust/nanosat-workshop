@@ -10,9 +10,6 @@ runner = "espflash flash --monitor"
 runner = "probe-rs run --chip RP2040"
 # runner = "elf2uf2-rs -d"
 
-# [target.riscv32imc-unknown-none-elf]
-# runner = "espflash flash --monitor"
-
 [build]
 # rustflags = [
 #   "-C",
@@ -29,19 +26,16 @@ runner = "probe-rs run --chip RP2040"
 
 rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
 
+# [build]
+# target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
 # target = "riscv32imc-unknown-none-elf"
 
 [alias]
-# rb = "run --target riscv32imc-unknown-none-elf --bin"
-# rrb = "run --target riscv32imc-unknown-none-elf --release --bin"
-# t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
+esp32-c3 = "run --target riscv32imc-unknown-none-elf --release --no-default-features -F esp32-c3"
+pico-w = "run --target thumbv6m-none-eabi --release --no-default-features -F pico-w"
+# pico-w-attach = "probe-rs attach --target thumbv6m-none-eabi --release --no-default-features -F pico-w"
 
-website-docs = "doc --no-deps --workspace --target-dir ./docs/skeleton --document-private-items"
-
-
-# [build]
-# target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+
-# run-firmware = "run --target thumbv6m-none-eabi --no-default-features -F firmware"
-
-
+# Building locally:
+# for `--enable-index-page` it is required to pass `-Z unstable-options` to rustdocs
+docs-pico-w = "doc --target thumbv6m-none-eabi --release --no-default-features --document-private-items -p onboard-computer -F pico-w -p pico-w"
 

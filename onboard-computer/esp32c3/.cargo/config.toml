@@ -1,0 +1,36 @@
+[env]
+# ESP_LOGLEVEL="warn"
+ESP_LOGLEVEL="info"
+DEFMT_LOG = "info"
+
+[target.riscv32imc-unknown-none-elf]
+runner = "espflash flash --monitor"
+
+
+[build]
+rustflags = [
+  "-C",
+  "link-arg=-Tlinkall.x",
+
+  # Required to obtain backtraces (e.g. when using the "esp-backtrace" crate.)
+  # NOTE: May negatively impact performance of produced code
+  "-C",
+  "force-frame-pointers",
+
+  # WiFi
+  # "-C", "link-arg=-Trom_functions.x",
+]
+
+rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
+
+target = "riscv32imc-unknown-none-elf"
+
+[unstable]
+# for alloc
+# build-std = ["alloc", "core"]
+build-std = ["core"]
+
+[alias]
+rb = "run --target riscv32imc-unknown-none-elf --bin"
+rrb = "run --target riscv32imc-unknown-none-elf --release --bin"
+t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
