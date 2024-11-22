@@ -4,11 +4,14 @@ ESP_LOGLEVEL="info"
 DEFMT_LOG = "info"
 
 [target.riscv32imc-unknown-none-elf]
-runner = "espflash flash --monitor"
+runner = "espflash flash --monitor -L defmt"
 
 
 [build]
 rustflags = [
+  # enable defmt
+  "-C", "link-arg=-Tdefmt.x",
+
   "-C",
   "link-arg=-Tlinkall.x",
 
@@ -34,3 +37,5 @@ build-std = ["core"]
 rb = "run --target riscv32imc-unknown-none-elf --bin"
 rrb = "run --target riscv32imc-unknown-none-elf --release --bin"
 t = "test --target x86_64-unknown-linux-gnu --no-default-features -F std"
+
+esp32-demo = "run --target riscv32imc-unknown-none-elf --release --no-default-features -F riscv -F esp32c3 -F defmt -F run-temperature-and-humidity -F embassy-time-systick"

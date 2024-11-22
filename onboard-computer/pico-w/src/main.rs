@@ -10,11 +10,9 @@ use cortex_m_rt::{exception, ExceptionFrame};
 #[cfg(feature = "cortex-m")]
 use panic_probe as _;
 
-// #[cfg(feature = "rp2040")]
+#[cfg(feature = "rp2040")]
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    embassy_rp::pac::SIO.spinlock(31).write_value(1);
-
     let application = pico_w::Application::init();
     application.run()
 }

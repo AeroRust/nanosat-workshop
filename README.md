@@ -1,8 +1,19 @@
 # Nanosat embedded workshop
 ## using Embassy, written in Rust
 
+### Going through the Workshop
 
-### Getting started
+Using [`cargo-generate` (install instructions)](https://github.com/cargo-generate/cargo-generate/https://github.com/cargo-generate/cargo-generate/?tab=readme-ov-file#installation):
+
+```
+# with ssh
+cargo generate --branch skeleton git@github.com:AeroRust/nanosat-workshop.git
+# with https
+cargo generate --branch skeleton https://github.com/AeroRust/nanosat-workshop.git
+```
+
+### Development
+#### Getting started
 
 To setup your environment and learn about the exercises follow the book.
 You can access the book in a few ways:

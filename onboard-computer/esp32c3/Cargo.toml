@@ -6,8 +6,28 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["embassy-time-systick", "riscv", "run-imu", "run-gnss", "run-pressure-and-temperature", "run-temperature-and-humidity", "log"]
-riscv = ["embassy-executor/arch-riscv32", "dep:esp-println"]
+# default = ["embassy-time-systick", "riscv", "default-sensors", "defmt", "esp-backtrace-println"]
+default = ["riscv", "default-sensors", "defmt"]
+default-sensors = ["run-imu", "run-gnss", "run-pressure-and-temperature", "run-temperature-and-humidity"]
+
+std = []
+
+# esp-backtrace-println = ["dep:esp-backtrace", "dep:esp-println"]
+# riscv = ["embassy-executor/arch-riscv32", "dep:esp-println", "dep:esp-backtrace"]
+# riscv = ["esp-hal-embassy/esp32c3", "dep:esp-println", "dep:esp-backtrace"]
+riscv = ["esp-hal-embassy/esp32c3", "portable-atomic/unsafe-assume-single-core"]
+
+defmt = [
+    "dep:defmt",
+    "esp-hal-embassy/defmt",
+    "heapless/defmt-03"
+    # "esp-backtrace?/defmt",
+    # "esp-println?/defmt-espflash"
+]
+log = [
+    "dep:log",
+    # "esp-println?/log"
+]
 
 run-imu = ["ICM42670"]
 ICM42670 = ["dep:icm42670"]
@@ -22,26 +42,28 @@ shtcx = ["dep:shtcx"]
 run-gnss = ["LC76G"]
 LC76G = ["dep:lc76g", "dep:nmea"]
 
-embassy-time-systick = ["hal/embassy-time-systick-16mhz", "embassy-time/tick-hz-16_000_000"]
-# embassy-time-systick = ["embassy-time/tick-hz-16_000_000"]
-embassy-time-timg0 = ["hal/embassy-time-timg0", "embassy-time/tick-hz-1_000_000"]
+# embassy-time-systick = [, "embassy-time/tick-hz-16_000_000"]
+# embassy-time-timg0 = ["esp-hal-embassy/integrated-timers", "esp-hal-embassy/esp32c3", "embassy-time/tick-hz-1_000_000"]
 
 [dependencies]
 
-hal = { package = "esp-hal", version = "0.17", features = [
-    "embassy",
-    "async",
+hal = { package = "esp-hal", version = "0.21", features = [
+    # "async",
     "esp32c3",
+    # "log",
     # "portable-atomic",
 ] }
+esp-hal-embassy = { version = "0.4", features = ["integrated-timers", "esp32c3"]}
 
 # ESP32C3
-# debugging
+# # debugging
 # esp-backtrace = { workspace = true, optional = true }
-esp-println = { workspace = true, optional = true }
+# esp-println = { workspace = true, optional = true }
 log = { workspace = true, optional = true }
+defmt = { workspace = true, optional = true }
 
-embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
+# embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
+embassy-executor = { workspace = true }
 embassy-sync.workspace = true
 embassy-futures.workspace = true
 embassy-net.workspace = true
@@ -69,7 +91,7 @@ heapless.workspace = true
 
 static_cell.workspace = true
 
-critical-section = { workspace = true }
+# critical-section = { workspace = true }
 portable-atomic = { workspace = true }
 # portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"]}
 # critical-section.workspace = true

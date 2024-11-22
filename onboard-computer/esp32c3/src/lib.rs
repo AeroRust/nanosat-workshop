@@ -2,7 +2,9 @@
 #![feature(type_alias_impl_trait)]
 #![feature(impl_trait_in_assoc_type)]
 
+// pub use hal::{entry, peripherals};
+
 #[doc(inline)]
-use application::Application;
+pub use application::Application;
 
 pub mod application;

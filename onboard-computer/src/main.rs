@@ -5,8 +5,10 @@
 
 #[cfg(feature = "esp32-c3")]
 use esp_backtrace as _;
+#[cfg(feature = "esp32-c3")]
+use esp_println as _;
 
-#[cfg(feature = "defmt")]
+#[cfg(all(feature = "rp2040", feature = "defmt"))]
 use defmt_rtt as _;
 
 #[cfg(feature = "cortex-m")]
@@ -14,26 +16,29 @@ use cortex_m_rt::{exception, ExceptionFrame};
 #[cfg(feature = "cortex-m")]
 use panic_probe as _;
 
-#[cfg(feature = "esp32-c3")]
-use hal::peripherals::Peripherals;
-
-#[cfg(feature = "esp32-c3")]
-use esp32_c3::Application;
-
 // static EXECUTOR: StaticCell<Executor> = StaticCell::new();
 
 #[cfg(feature = "esp32-c3")]
 #[hal::entry]
 fn main() -> ! {
-    esp_println::println!("Init!");
+    use esp32c3::Application;
+    use hal::peripherals::Peripherals;
+    // esp_println::println!("Init!");
     let peripherals = Peripherals::take();
 
-    esp_println::logger::init_logger_from_env();
-    log::info!("Logger is setup");
+    #[cfg(feature = "log")]
+    {
+        esp_println::logger::init_logger_from_env();
+        log::info!("log: Logger is setup");
+    }
 
-    let executor = static_cell::make_static!(Executor::new());
+    #[cfg(feature = "defmt")]
+    {
+        // esp_println::logger::init_logger_from_env();
+        defmt::info!("defmt: Logger is setup");
+    }
 
-    Application::init(peripherals).run(executor)
+    Application::init(peripherals).run()
 }
 
 #[cfg(feature = "cortex-m")]

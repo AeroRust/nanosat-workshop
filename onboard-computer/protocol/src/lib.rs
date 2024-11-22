@@ -3,6 +3,8 @@
 pub use median::calculate_median;
 
 mod median;
+#[cfg(feature = "storage")]
+pub mod storage;
 
 // #[cfg(feature = "postcard")]
 // use postcard::experimental::schema::Schema;
@@ -28,7 +30,7 @@ impl SendMessage {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum SendMessage {
@@ -61,7 +63,7 @@ pub enum SendMessage {
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 // #[cfg_attr(feature = "serde", serde(untagged))]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Status {
     pub internal_temperature: f32,
     /// Will be None if we are powered by VBUS (USB)
@@ -80,6 +82,12 @@ pub struct Status {
     /// respectively to the WIFI network provided in the firmware.
     #[cfg_attr(feature = "serde", serde(default))]
     pub radio_connected: Option<bool>,
+    /// # Returns
+    ///
+    /// `Some(true)` or `Some(false)` to indicated that Storage feature (`run-storage`) is **enabled**
+    /// and the status of the SD Card is functional (`true`) or Not functional (`false`)
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub storage_functional: Option<bool>,
 }
 
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
@@ -90,15 +98,14 @@ pub struct Battery {
     ///
     /// Should be between 0V & 3V3 for the Pico!
     pub voltage: f32,
-    /// 
+    ///
     pub percentage: u8,
 }
 
 #[cfg(feature = "GNSS")]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-// #[cfg_attr(feature = "serde", serde(untagged))]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GnssData {
     GSA(nmea::sentences::GsaData),
     GSV(nmea::sentences::GsvData),

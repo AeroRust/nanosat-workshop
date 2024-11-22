@@ -1,10 +1,11 @@
 use core::{fmt::Write as _, ops::Deref};
 
+#[cfg(feature = "run-pressure-and-temperature")]
 use bmp388::BMP388;
+#[cfg(feature = "run-gnss")]
 use lc76g::GnssMessage;
 
 use embassy_embedded_hal::shared_bus::asynch::i2c::I2cDevice;
-use embassy_executor::Executor;
 use embassy_futures::{join::join, select};
 use embassy_sync::{
     blocking_mutex::raw::{CriticalSectionRawMutex, NoopRawMutex},
@@ -14,41 +15,42 @@ use embassy_sync::{
 };
 use embassy_time::{Duration, Timer};
 
-use esp_println::println;
-
 use hal::{
     clock::{ClockControl, Clocks},
-    embassy,
-    gpio::{
-        Floating, Gpio1, Gpio19, Gpio2, Gpio3, Gpio4, Gpio5, Gpio6, Gpio7, Gpio9, Input, OpenDrain,
-        Output, PushPull,
-    },
+    delay::Delay,
+    gpio::{Gpio1, Gpio19, Gpio2, Gpio3, Gpio4, Gpio5, Gpio6, Gpio7, Gpio9},
+    gpio::{Input, Io, Level, Output},
     i2c::I2C,
-    interrupt::{self, Priority},
+    //     i2c::I2C,
+    interrupt::{self, InterruptHandler, Priority},
     peripherals::{Interrupt, Peripherals, I2C0, UART0, UART1, USB_DEVICE},
     prelude::*,
-    system::SystemParts,
-    timer::TimerGroup,
-    uart,
-    Delay,
-    // otg_fs::{UsbBus, USB},
-    Rng,
-    Rtc,
-    Uart,
-    UsbSerialJtag,
-    IO,
+    //     // otg_fs::{UsbBus, USB},
+    rng::Rng,
+    rtc_cntl::Rtc,
+    //     prelude::*,
+    system::SystemControl,
+    //     Uart,
+    //     IO,
+    timer::systimer::SystemTimer,
+    timer::timg::TimerGroup,
+    uart::{self, Uart},
+    usb_serial_jtag::UsbSerialJtag,
+    Async,
 };
 
 use embedded_io_async::{Read, Write};
 
+#[cfg(feature = "run-imu")]
 use icm42670::accelerometer::Accelerometer;
 
-use log::{debug, error, info, trace, warn};
+use defmt::{debug, error, info, trace, warn};
+#[cfg(feature = "run-gnss")]
 use nmea::ParseResult;
 use static_cell::make_static;
 
 /// The Rust ESP32-C3 board has onboard LED on GPIO 7
-pub type OnboardLed = Gpio7<Output<PushPull>>;
+pub type OnboardLed = Output<'static, Gpio7>;
 
 static MOCK_SENTENCES: &'static str = include_str!("../../../tests/nmea.log");
 
@@ -58,46 +60,55 @@ const UART_READ_BUF_SIZE: usize = 126;
 // EOT (CTRL-D)
 const UART_AT_CMD: u8 = 0x04;
 
-const NMEA_SENTENCE_TERMINATOR: &str = "\r\n";
+pub const NMEA_SENTENCE_TERMINATOR: &str = "\r\n";
 
-pub type I2C0AsyncDeviceType = I2cDevice<'static, CriticalSectionRawMutex, I2C<'static, I2C0>>;
-pub type I2C0AsyncMutex = Mutex<CriticalSectionRawMutex, I2C<'static, I2C0>>;
+pub type I2C0AsyncDeviceType =
+    I2cDevice<'static, CriticalSectionRawMutex, I2C<'static, I2C0, hal::Async>>;
+pub type I2C0AsyncMutex = Mutex<CriticalSectionRawMutex, I2C<'static, I2C0, hal::Async>>;
 
-pub type I2C0BlockingMutex = critical_section::Mutex<core::cell::RefCell<I2C<'static, I2C0>>>;
+pub type I2C0BlockingMutex =
+    critical_section::Mutex<core::cell::RefCell<I2C<'static, I2C0, hal::Blocking>>>;
 pub type I2C0BlockingDeviceType =
-    embedded_hal_bus::i2c::CriticalSectionDevice<'static, I2C<'static, I2C0>>;
+    embedded_hal_bus::i2c::CriticalSectionDevice<'static, I2C<'static, I2C0, hal::Async>>;
 
 pub type I2C0Mutex = I2C0AsyncMutex;
 pub type I2C0DeviceType = I2C0AsyncDeviceType;
 
 /// GNSS: RST pin
-pub type GnssRSTPin = Gpio19<Output<PushPull>>;
+// pub type GnssRSTPin = Gpio19<Output<PushPull>>;
+pub type GnssRSTPin = Gpio19;
 
 /// GNSS: Board to GNSS TX pin is 5
-pub type GnssRXPin = Gpio5<Output<PushPull>>;
+// pub type GnssRXPin = Gpio5<Output<PushPull>>;
+pub type GnssRXPin = Gpio5;
 
 /// GNSS: GNSS to board RX pin is 6
-pub type GnssTXPin = Gpio6<Input<Floating>>;
+// pub type GnssTXPin = Gpio6<Input<Floating>>;
+pub type GnssTXPin = Gpio6;
 
+#[cfg(feature = "run-gnss")]
 pub type GnssUartSenderChannel = Channel<CriticalSectionRawMutex, GnssMessage, 100>;
 
 /// Sd Card: Board to card Data In (DI) Pin
 ///
 /// SPI MOSI pin
-pub type SDCardDIPin = Gpio1<Input<PushPull>>;
+pub type SDCardDIPin = Gpio1;
 
 /// Sd Card: Card to board Data Out (DO) Pin
 ///
 /// SPI MISO pin
-pub type SDCardDOPin = Gpio2<Input<PushPull>>;
+// pub type SDCardDOPin = Gpio2<Input<PushPull>>;
+pub type SDCardDOPin = Gpio2;
 
 /// Sd Card: SCLK (Clock) SPI Pin
 ///
 /// SPI Clock Pin
-pub type SDCardCLKPin = Gpio3<Input<PushPull>>;
+// pub type SDCardCLKPin = Gpio3<Input<PushPull>>;
+pub type SDCardCLKPin = Gpio3;
 
 /// Sd Card: Chip Select Pin for SD card
-pub type SDCardCSPin = Gpio1<Input<PushPull>>;
+// pub type SDCardCSPin = Gpio1<Input<PushPull>>;
+pub type SDCardCSPin = Gpio1;
 
 pub type DebugUartPipe = Pipe<NoopRawMutex, 1024>;
 
@@ -109,26 +120,32 @@ pub struct Application {
     // TODO: Uncomment when you create a `Uart` instance of the `UART0` peripheral
     // uart: Uart<'static, UART0>,
     // TODO: Uncomment when you create a `Uart` instance of the `UART1` peripheral
+    #[cfg(feature = "run-gnss")]
     gnss_uart: Uart<'static, UART1>,
     // TODO: Uncomment when you create a `Rng` instance
     rng: Rng,
     // TODO: Uncomment when you create the `OnboardLed` instance
     onboard_led: OnboardLed,
     // TODO: Uncomment when you create the `UsbSerialJtag` instance
-    usb_serial_jtag: UsbSerialJtag<'static>,
+    usb_serial_jtag: UsbSerialJtag<'static, Async>,
+    // #[cfg(any(feature = "run"))]
+    #[cfg(feature = "run-pressure-and-temperature")]
     i2c: &'static I2C0Mutex,
+    #[cfg(feature = "run-temperature-and-humidity")]
+    i2c: I2C<'static, I2C0, hal::Blocking>,
+    // i2c: &'static I2C0BlockingMutex,
 }
 
 impl Application {
     /// Initialises all the peripherals which the [`Application`] will use.
     pub fn init(peripherals: Peripherals) -> Self {
-        let system: SystemParts = peripherals.SYSTEM.split();
+        let system = SystemControl::new(peripherals.SYSTEM);
         let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
 
-        let mut rtc = Rtc::new(peripherals.LPWR);
-        let mut timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks);
+        let mut rtc = Rtc::new(peripherals.LPWR, None);
+        let mut timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks, None);
         let mut wdt0 = timer_group0.wdt;
-        let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks);
+        let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks, None);
         let mut wdt1 = timer_group1.wdt;
 
         // Disable watchdog timers
@@ -137,23 +154,16 @@ impl Application {
         wdt0.disable();
         wdt1.disable();
 
-        #[cfg(feature = "embassy-time-systick")]
-        embassy::init(
-            &clocks,
-            hal::systimer::SystemTimer::new(peripherals.SYSTIMER),
-        );
-
-        #[cfg(feature = "embassy-time-timg0")]
-        embassy::init(&clocks, timer_group0.timer0);
+        let timg0 = TimerGroup::new(peripherals.TIMG0);
+        esp_hal_embassy::init(timg0.timer0);
 
         // Setup peripherals for application
-        let io = IO::new(peripherals.GPIO, peripherals.IO_MUX);
+        let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
 
         // Onboard LED
         // Rust ESP32-C3 schematics: https://raw.githubusercontent.com/esp-rs/esp-rust-board/master/assets/rust_board_v1_pin-layout.png
         // Set GPIO7 as an output, and set its state high initially.
-        let mut onboard_led = io.pins.gpio7.into_push_pull_output();
-        onboard_led.set_high().unwrap();
+        let mut onboard_led = Output::new(io.pins.gpio7, Level::High);
 
         // Setup Random Generator for GNSS Reading
         // Hal example: https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/rng.rs
@@ -166,7 +176,7 @@ impl Application {
         // TODO: Configure the UART 1 peripheral
         // let mut uart1 = todo!("Configure UART 1 at pins 0 (TX) and 1 (RX) with `None` or default for the `Config`");
 
-        let mut uart1 = Uart::new_with_config(
+        let mut uart1 = Uart::new_async_with_config(
             peripherals.UART1,
             uart::config::Config {
                 // default baudrate
@@ -175,11 +185,9 @@ impl Application {
                 data_bits: uart::config::DataBits::DataBits8,
                 parity: uart::config::Parity::ParityNone,
                 stop_bits: uart::config::StopBits::STOP1,
+                ..Default::default()
             },
-            Some(uart::TxRxPins::new_tx_rx(
-                io.pins.gpio5.into_push_pull_output(),
-                io.pins.gpio6.into_floating_input(),
-            )),
+            Some(uart::TxRxPins::new_tx_rx(io.pins.gpio5, io.pins.gpio6)),
             &clocks,
         );
         uart1
@@ -210,7 +218,7 @@ impl Application {
         //     uart0
         // };
 
-        let mut usb_serial_jtag = UsbSerialJtag::new(peripherals.USB_DEVICE);
+        let mut usb_serial_jtag = UsbSerialJtag::new_async(peripherals.USB_DEVICE);
         usb_serial_jtag.listen_rx_packet_recv_interrupt();
         // timer_group0.timer0.start(1u64.secs());
         interrupt::enable(Interrupt::USB_DEVICE, interrupt::Priority::Priority1).unwrap();
@@ -233,21 +241,41 @@ impl Application {
         //     .device_class(usbd_serial::USB_CLASS_CDC)
         //     .build();
 
-        let i2c0 = I2C::new(
-            peripherals.I2C0,
-            io.pins.gpio10,
-            io.pins.gpio8,
-            400_u32.kHz(),
-            &clocks,
-        );
-        interrupt::enable(Interrupt::I2C_EXT0, interrupt::Priority::Priority2).unwrap();
+        #[cfg(feature = "run-pressure-and-temperature")]
+        let i2c = {
+            let i2c0 = I2C::new_async(
+                peripherals.I2C0,
+                io.pins.gpio10,
+                io.pins.gpio8,
+                400_u32.kHz(),
+                &clocks,
+            );
+            interrupt::enable(Interrupt::I2C_EXT0, interrupt::Priority::Priority2).unwrap();
 
-        let i2c = make_static!(Mutex::<CriticalSectionRawMutex, _>::new(i2c0));
+            make_static!(Mutex::<CriticalSectionRawMutex, _>::new(i2c0))
+        };
+        #[cfg(feature = "run-temperature-and-humidity")]
+        let i2c = {
+            let i2c0 = I2C::new(
+                peripherals.I2C0,
+                io.pins.gpio10,
+                io.pins.gpio8,
+                400_u32.kHz(),
+                &clocks,
+                None,
+            );
+            interrupt::enable(Interrupt::I2C_EXT0, interrupt::Priority::Priority2).unwrap();
 
+            // let mutex = I2C0BlockingMutex::new(core::cell::RefCell::new(i2c0));
+
+            // make_static!(mutex)
+            i2c0
+        };
         info!("Peripherals initialized");
         Self {
             clocks,
             // uart: uart0,
+            #[cfg(feature = "run-gnss")]
             gnss_uart: uart1,
             usb_serial_jtag,
             rng,
@@ -257,7 +285,10 @@ impl Application {
     }
 
     /// Runs the application by spawning each of the [`Application`]'s tasks
-    pub fn run(self, executor: &'static mut Executor) -> ! {
+    pub fn run(self) -> ! {
+        // let executor = make_static!(esp_hal_embassy::Executor::new());
+        let executor = make_static!(esp_hal_embassy::Executor::new());
+
         executor.run(|spawner| {
             let status_channel = make_static!(StatusChannel::new());
 
@@ -287,19 +318,17 @@ impl Application {
                 spawner.must_spawn(run_imu(self.i2c));
             }
 
-            #[cfg(feature = "run-humidity-and-temperature")]
+            #[cfg(feature = "run-temperature-and-humidity")]
             spawner.must_spawn(run_temp_humid(
-                I2cDevice::new(self.i2c),
-                hal::Delay::new(&self.clocks),
+                // I2cDevice::new(self.i2c),
+                self.i2c,
+                hal::delay::Delay::new(&self.clocks),
             ));
+
             // spawner.must_spawn(run_usb_serial_jtag(self.usb_serial_jtag));
             // spawner.must_spawn(run_usb_serial(self.usb_serial));
             #[cfg(feature = "run-pressure-and-temperature")]
-            spawner.must_spawn(run_pressure_sense(
-                self.i2c,
-                embassy_time::Delay,
-                uart_pipe,
-            ));
+            spawner.must_spawn(run_pressure_sense(self.i2c, embassy_time::Delay, uart_pipe));
         })
     }
 }
@@ -321,6 +350,7 @@ pub enum Error {}
 
 pub type StatusChannel = Channel<CriticalSectionRawMutex, Result<Status, Error>, 10>;
 
+#[cfg(feature = "run-gnss")]
 pub type GnssHandlerChannel =
     Channel<CriticalSectionRawMutex, heapless::Vec<nmea::ParseResult, 10>, 10>;
 
@@ -336,11 +366,11 @@ async fn run_blinky(mut led: OnboardLed, status_channel: &'static StatusChannel)
         match status_res {
             Ok(status) => {
                 // Turn on the LED
-                led.set_high().unwrap();
+                led.set_high();
                 // Delay 200 ms
                 Timer::after(Duration::from_millis(200)).await;
                 // Turn off the LED
-                led.set_low().unwrap();
+                led.set_low();
                 // Delay 200 ms
                 Timer::after(Duration::from_millis(200)).await;
             }
@@ -348,11 +378,11 @@ async fn run_blinky(mut led: OnboardLed, status_channel: &'static StatusChannel)
                 // 1 seconds fast blinking
                 for _ in 0..5 {
                     // Turn on the LED
-                    led.set_high().unwrap();
+                    led.set_high();
                     // Delay 200 ms
                     Timer::after(Duration::from_millis(100)).await;
                     // Turn off the LED
-                    led.set_low().unwrap();
+                    led.set_low();
                     // Delay 200 ms
                     Timer::after(Duration::from_millis(100)).await;
                 }
@@ -361,307 +391,316 @@ async fn run_blinky(mut led: OnboardLed, status_channel: &'static StatusChannel)
     }
 }
 
-/// # Exercise: Parse GNSS data from NMEA 0183 sentences
-///
-/// This task parses NMEA sentences simulated from a GNSS data log file
-/// The task picks random sentences from a log file and looks out for `GNS` and `GSV` messages
-///
-///
-/// Print the ID's of satellites used for fix in GSA sentence and the satellites in view from the GSV sentence
-///
-/// `nmea` crate docs: <https://docs.rs/nmea>
-///
-/// 0. Add the `nmea` crate to the `Cargo.toml` of the `onboard-computer`
-/// - You should exclude the `default-features` of the crate, as we operate in `no_std` environment
-/// - Alternate solution: You can add the crate to the `workspace` dependencies of the project in the `Cargo.toml` of the project
-///   For more details see: <https://doc.rust-lang.org/cargo/reference/workspaces.html#the-dependencies-table>
-///
-/// 1. Use the `nmea` crate to parse the sentences
-/// 2. Print the parsing result (for debugging purposes) using `esp_println::println!()`
-/// 3. Use a match on the result and handle the cases:
-/// - GSA - print "The IDs of satellites used for fix: {x:?}" field
-/// - GSV - print "Satellites in View: {x}" field
-/// 4. Repeat this processes every 2 seconds.
-#[embassy_executor::task]
-async fn run_gnss_mocked(mut rng: Rng) {
-    loop {
-        let num = rng.random() as u8;
-        let sentence = MOCK_SENTENCES.lines().nth(num as usize).unwrap();
-
-        // println!("(debug) NMEA sentence at line: {num}: {sentence}");
-        // 1. Use the `nmea` crate to parse the sentences
-        // TODO: Uncomment line and finish the `todo!()`
-        // let parse_result = todo!("call nmea::parse_str");
-        let parse_result = nmea::parse_str(sentence);
-        // 2. Print the parsing result (for debugging purposes) using `esp_println::println!()`
-        // println!("{:?}", parse_result);
-        // 3. Use a match on the result and handle the sentences:
-        // - GSA
-        // - GSV
-        match parse_result {
-            Ok(ParseResult::GSA(gsa_data)) => {
-                println!("GSA: Fix satellites: {:?}", gsa_data.fix_sats_prn);
-            }
-            Ok(ParseResult::GSV(gsv_data)) => {
-                println!("GSV: Satellites in view: {}", gsv_data.sats_in_view);
-            }
-            _ => {}
-        }
-        Timer::after(Duration::from_secs(2)).await;
-    }
-}
-
-/// Sets some options for the GNSS receiver
-///
-/// Sends the message over the channel [`GnssUartSenderChannel`] to the [`run_gnss`] task.
-#[embassy_executor::task]
-async fn run_gnss_setup(send_channel: &'static GnssUartSenderChannel) {
-    let wait_for = Duration::from_millis(50);
-    info!(
-        "GNSS send channel message: Wait {} milliseconds before sending...",
-        wait_for.as_millis()
-    );
-    Timer::after(wait_for).await;
-    let baudrate = GnssMessage::SetBaudrate;
-    info!("Sending: {}", baudrate.to_nmea_sentence());
-    send_channel.send(baudrate).await;
-
-    let gnss_providers = GnssMessage::EnableGnssProviders;
-    info!("Sending: {}", gnss_providers.to_nmea_sentence());
-    send_channel.send(gnss_providers).await;
-}
-
-fn split_sentences(sentences: &str) -> Option<Lines> {
-    let (full_sentences, partial_sentence) = sentences.rsplit_once("\r\n").unwrap();
-
-    let full_sentences = full_sentences
-        .lines()
-        .map(|line| {
-            trace!("NMEA Sentence: {}", line);
-
-            match nmea::parse_str(line) {
-                Ok(x) => Ok(x),
-                Err(err) => {
-                    debug!(
-                        "Failed to parse sentence because: {}; sentence: '{}'",
-                        err, line
-                    );
-                    Err(err)
-                }
-            }
-        })
-        .collect();
-
-    if !partial_sentence.is_empty() {
-        Some(Lines {
-            partial_sentence: Some(partial_sentence),
-            parsed: full_sentences,
-        })
-    } else {
-        Some(Lines {
-            partial_sentence: None,
-            parsed: full_sentences,
-        })
-    }
-}
-
-#[derive(Debug)]
-pub struct Lines<'a> {
-    partial_sentence: Option<&'a str>,
-    parsed: heapless::Vec<Result<nmea::ParseResult, nmea::Error<'a>>, 10>,
-}
-
-/// https://www.waveshare.com/wiki/LC76G_GNSS_Module
-#[embassy_executor::task]
-async fn run_gnss(
-    uart: Uart<'static, UART1>,
-    send_channel: &'static GnssUartSenderChannel,
-    gnss_handler_sender: &'static GnssHandlerChannel,
-) {
-    let (mut tx, mut rx) = uart.split();
-
-    let receive = async {
-        info!("GNSS Receive: Uart reading...");
-        // max message size to receive
-        // leave some extra space for AT-CMD characters
-        const MAX_BUFFER_SIZE: usize = 3 * UART_READ_BUF_SIZE + 16;
-
-        let mut rbuf: [u8; MAX_BUFFER_SIZE] = [0_u8; MAX_BUFFER_SIZE];
-        let mut sentences_string = heapless::String::<512>::new();
-        // let mut offset: usize = 0;
+#[cfg(feature = "run-gnss")]
+mod gnss {
+    /// # Exercise: Parse GNSS data from NMEA 0183 sentences
+    ///
+    /// This task parses NMEA sentences simulated from a GNSS data log file
+    /// The task picks random sentences from a log file and looks out for `GNS` and `GSV` messages
+    ///
+    ///
+    /// Print the ID's of satellites used for fix in GSA sentence and the satellites in view from the GSV sentence
+    ///
+    /// `nmea` crate docs: <https://docs.rs/nmea>
+    ///
+    /// 0. Add the `nmea` crate to the `Cargo.toml` of the `onboard-computer`
+    /// - You should exclude the `default-features` of the crate, as we operate in `no_std` environment
+    /// - Alternate solution: You can add the crate to the `workspace` dependencies of the project in the `Cargo.toml` of the project
+    ///   For more details see: <https://doc.rust-lang.org/cargo/reference/workspaces.html#the-dependencies-table>
+    ///
+    /// 1. Use the `nmea` crate to parse the sentences
+    /// 2. Print the parsing result (for debugging purposes) using `esp_println::println!()`
+    /// 3. Use a match on the result and handle the cases:
+    /// - GSA - print "The IDs of satellites used for fix: {x:?}" field
+    /// - GSV - print "Satellites in View: {x}" field
+    /// 4. Repeat this processes every 2 seconds.
+    #[embassy_executor::task]
+    async fn run_gnss_mocked(mut rng: Rng) {
         loop {
-            let r = embedded_io_async::Read::read(&mut rx, &mut rbuf).await;
+            let num = rng.random() as u8;
+            let sentence = MOCK_SENTENCES.lines().nth(num as usize).unwrap();
 
-            match r {
-                Ok(len) => {
-                    match core::str::from_utf8(&rbuf[..len]) {
-                        Ok(ascii_data) => {
-                            log::info!("GNSS receive: Read {len} bytes: {}", ascii_data);
+            // println!("(debug) NMEA sentence at line: {num}: {sentence}");
+            // 1. Use the `nmea` crate to parse the sentences
+            // TODO: Uncomment line and finish the `todo!()`
+            // let parse_result = todo!("call nmea::parse_str");
+            let parse_result = nmea::parse_str(sentence);
+            // 2. Print the parsing result (for debugging purposes) using `esp_println::println!()`
+            // println!("{:?}", parse_result);
+            // 3. Use a match on the result and handle the sentences:
+            // - GSA
+            // - GSV
+            match parse_result {
+                Ok(ParseResult::GSA(gsa_data)) => {
+                    info!("GSA: Fix satellites: {:?}", gsa_data.fix_sats_prn);
+                }
+                Ok(ParseResult::GSV(gsv_data)) => {
+                    info!("GSV: Satellites in view: {}", gsv_data.sats_in_view);
+                }
+                _ => {}
+            }
+            Timer::after(Duration::from_secs(2)).await;
+        }
+    }
 
-                            // should fit the String buffer
-                            sentences_string.push_str(ascii_data).unwrap();
-                        }
-                        Err(utf8_err) => {
-                            error!(
-                                "GNSS receive: Failed to parse received GNSS bytes as utf8: {}",
-                                utf8_err
-                            );
-                            log::warn!(
+    /// Sets some options for the GNSS receiver
+    ///
+    /// Sends the message over the channel [`GnssUartSenderChannel`] to the [`run_gnss`] task.
+    #[embassy_executor::task]
+    async fn run_gnss_setup(send_channel: &'static GnssUartSenderChannel) {
+        let wait_for = Duration::from_millis(50);
+        info!(
+            "GNSS send channel message: Wait {} milliseconds before sending...",
+            wait_for.as_millis()
+        );
+        Timer::after(wait_for).await;
+        let baudrate = GnssMessage::SetBaudrate;
+        info!("Sending: {}", baudrate.to_nmea_sentence());
+        send_channel.send(baudrate).await;
+
+        let gnss_providers = GnssMessage::EnableGnssProviders;
+        info!("Sending: {}", gnss_providers.to_nmea_sentence());
+        send_channel.send(gnss_providers).await;
+    }
+
+    fn split_sentences(sentences: &str) -> Option<Lines> {
+        let (full_sentences, partial_sentence) = sentences.rsplit_once("\r\n").unwrap();
+
+        let full_sentences = full_sentences
+            .lines()
+            .map(|line| {
+                trace!("NMEA Sentence: {}", line);
+
+                match nmea::parse_str(line) {
+                    Ok(x) => Ok(x),
+                    Err(err) => {
+                        debug!(
+                            "Failed to parse sentence because: {}; sentence: '{}'",
+                            err, line
+                        );
+                        Err(err)
+                    }
+                }
+            })
+            .collect();
+
+        if !partial_sentence.is_empty() {
+            Some(Lines {
+                partial_sentence: Some(partial_sentence),
+                parsed: full_sentences,
+            })
+        } else {
+            Some(Lines {
+                partial_sentence: None,
+                parsed: full_sentences,
+            })
+        }
+    }
+
+    #[derive(Debug)]
+    #[cfg(feature = "run-gnss")]
+    pub struct Lines<'a> {
+        partial_sentence: Option<&'a str>,
+        parsed: heapless::Vec<Result<nmea::ParseResult, nmea::Error<'a>>, 10>,
+    }
+
+    /// https://www.waveshare.com/wiki/LC76G_GNSS_Module
+    #[embassy_executor::task]
+    #[cfg(feature = "run-gnss")]
+    async fn run_gnss(
+        uart: Uart<'static, UART1>,
+        send_channel: &'static GnssUartSenderChannel,
+        gnss_handler_sender: &'static GnssHandlerChannel,
+    ) {
+        let (mut tx, mut rx) = uart.split();
+
+        let receive = async {
+            info!("GNSS Receive: Uart reading...");
+            // max message size to receive
+            // leave some extra space for AT-CMD characters
+            const MAX_BUFFER_SIZE: usize = 3 * UART_READ_BUF_SIZE + 16;
+
+            let mut rbuf: [u8; MAX_BUFFER_SIZE] = [0_u8; MAX_BUFFER_SIZE];
+            let mut sentences_string = heapless::String::<512>::new();
+            // let mut offset: usize = 0;
+            loop {
+                let r = embedded_io_async::Read::read(&mut rx, &mut rbuf).await;
+
+                match r {
+                    Ok(len) => {
+                        match core::str::from_utf8(&rbuf[..len]) {
+                            Ok(ascii_data) => {
+                                defmt::info!("GNSS receive: Read {} bytes: {}", len, ascii_data);
+
+                                // should fit the String buffer
+                                sentences_string.push_str(ascii_data).unwrap();
+                            }
+                            Err(utf8_err) => {
+                                error!(
+                                    "GNSS receive: Failed to parse received GNSS bytes as utf8: {}",
+                                    utf8_err
+                                );
+                                defmt::warn!(
                                 "GNSS receive: We've cleared buffer, losing the following content from GNSS: '{}'",
                                 sentences_string
                             );
-                            sentences_string.clear();
-                            continue;
-                        }
-                    };
-                }
-                Err(e) => {
-                    log::error!("GNSS receive: RX Error: {:?}", e);
-                    log::warn!(
+                                sentences_string.clear();
+                                continue;
+                            }
+                        };
+                    }
+                    Err(e) => {
+                        defmt::error!("GNSS receive: RX Error: {:?}", e);
+                        defmt::warn!(
                         "GNSS receive: We've cleared buffer, losing the following content from GNSS: '{}'",
                         sentences_string
                     );
-                    sentences_string.clear();
+                        sentences_string.clear();
 
-                    continue;
-                }
-            }
-
-            if sentences_string.contains("\r\n") {
-                let (partial_sentence, sentences) = match split_sentences(sentences_string.as_str())
-                {
-                    Some(lines) => {
-                        let partial_sentence = lines
-                            .partial_sentence
-                            .map(|string| heapless::String::<250>::try_from(string).unwrap());
-                        let sentences = lines
-                            .parsed
-                            .into_iter()
-                            .filter_map(|result| match result {
-                                Ok(sentence) => Some(sentence),
-                                Err(err) => {
-                                    trace!("GNSS receive, sentence parsing: {}", &err);
-                                    None
-                                }
-                            })
-                            .collect::<heapless::Vec<nmea::ParseResult, 10>>();
-
-                        (partial_sentence, sentences)
-                    }
-                    None => {
                         continue;
                     }
-                };
+                }
 
-                if sentences.len() > 0 {
-                    // info!(
-                    //     "{} full NMEA sentences parsed: {:?}",
-                    //     sentences.len(),
-                    //     &sentences
-                    // );
-                    if let Err(_full_err) = gnss_handler_sender.try_send(sentences) {
-                        warn!("GNSS sentences handler channel is full");
+                if sentences_string.contains("\r\n") {
+                    let (partial_sentence, sentences) =
+                        match split_sentences(sentences_string.as_str()) {
+                            Some(lines) => {
+                                let partial_sentence = lines.partial_sentence.map(|string| {
+                                    heapless::String::<250>::try_from(string).unwrap()
+                                });
+                                let sentences = lines
+                                    .parsed
+                                    .into_iter()
+                                    .filter_map(|result| match result {
+                                        Ok(sentence) => Some(sentence),
+                                        Err(err) => {
+                                            trace!("GNSS receive, sentence parsing: {}", &err);
+                                            None
+                                        }
+                                    })
+                                    .collect::<heapless::Vec<nmea::ParseResult, 10>>();
+
+                                (partial_sentence, sentences)
+                            }
+                            None => {
+                                continue;
+                            }
+                        };
+
+                    if sentences.len() > 0 {
+                        // info!(
+                        //     "{} full NMEA sentences parsed: {:?}",
+                        //     sentences.len(),
+                        //     &sentences
+                        // );
+                        if let Err(_full_err) = gnss_handler_sender.try_send(sentences) {
+                            warn!("GNSS sentences handler channel is full");
+                        }
+                    }
+                    trace!(
+                        "Partial NMEA sentence: {}",
+                        partial_sentence.clone().unwrap_or_default().as_str()
+                    );
+                    sentences_string.clear();
+
+                    if let Some(partial_sentence) = partial_sentence {
+                        sentences_string
+                            .push_str(partial_sentence.as_str())
+                            .unwrap();
                     }
                 }
-                trace!(
-                    "Partial NMEA sentence: {}",
-                    partial_sentence.clone().unwrap_or_default().as_str()
+            }
+        };
+
+        let send = async {
+            info!("GNSS Send: Uart writing on a channel message");
+            loop {
+                let send_gnss_sentence = send_channel.receive().await;
+
+                let sentence_string = send_gnss_sentence.to_nmea_sentence();
+                info!(
+                    "Sending sentence to Gnss receiver: '{}'",
+                    sentence_string.trim_end()
                 );
-                sentences_string.clear();
-
-                if let Some(partial_sentence) = partial_sentence {
-                    sentences_string
-                        .push_str(partial_sentence.as_str())
-                        .unwrap();
-                }
+                match tx.write_all(sentence_string.as_bytes()).await {
+                    Ok(_) => info!("GNSS sentence sent!"),
+                    Err(err) => error!("GNSS UART send: {err:?}"),
+                };
             }
-        }
-    };
+        };
 
-    let send = async {
-        info!("GNSS Send: Uart writing on a channel message");
+        select::select(receive, send).await;
+    }
+
+    #[embassy_executor::task]
+    #[cfg(feature = "run-gnss")]
+    async fn run_gnss_handler(gnss_handler_sender: &'static GnssHandlerChannel) {
         loop {
-            let send_gnss_sentence = send_channel.receive().await;
-
-            let sentence_string = send_gnss_sentence.to_nmea_sentence();
-            info!(
-                "Sending sentence to Gnss receiver: '{}'",
-                sentence_string.trim_end()
-            );
-            match tx.write_all(sentence_string.as_bytes()).await {
-                Ok(_) => info!("GNSS sentence sent!"),
-                Err(err) => error!("GNSS UART send: {err:?}"),
-            };
-        }
-    };
-
-    select::select(receive, send).await;
-}
-
-#[embassy_executor::task]
-async fn run_gnss_handler(gnss_handler_sender: &'static GnssHandlerChannel) {
-    loop {
-        let sentences = gnss_handler_sender.receive().await;
-        for sentence in sentences {
-            match sentence {
-                nmea::ParseResult::GSA(gsa) => {
-                    info!(
-                        "GSA - fixed sat prn ({} len): {:?}",
-                        gsa.fix_sats_prn.len(),
-                        gsa.fix_sats_prn
-                    )
-                }
-                nmea::ParseResult::GSV(gsv) => {
-                    info!(
-                        "GSV - {}, sats in view: {}",
-                        gsv.gnss_type, gsv.sats_in_view
-                    )
-                }
-                nmea::ParseResult::RMC(rmc) => {
-                    info!("RMC - status of fix: {:?}", rmc.status_of_fix)
-                }
-                nmea::ParseResult::GLL(gll) => {
-                    info!(
-                        "GLL - latitude: {:?}, longitude: {:?}, is valid? {}",
-                        gll.latitude, gll.longitude, gll.valid
-                    );
-                }
-                _ => {
-                    // skip rest of the sentences
+            let sentences = gnss_handler_sender.receive().await;
+            for sentence in sentences {
+                match sentence {
+                    nmea::ParseResult::GSA(gsa) => {
+                        info!(
+                            "GSA - fixed sat prn ({} len): {:?}",
+                            gsa.fix_sats_prn.len(),
+                            gsa.fix_sats_prn
+                        )
+                    }
+                    nmea::ParseResult::GSV(gsv) => {
+                        info!(
+                            "GSV - {}, sats in view: {}",
+                            gsv.gnss_type, gsv.sats_in_view
+                        )
+                    }
+                    nmea::ParseResult::RMC(rmc) => {
+                        info!("RMC - status of fix: {:?}", rmc.status_of_fix)
+                    }
+                    nmea::ParseResult::GLL(gll) => {
+                        info!(
+                            "GLL - latitude: {:?}, longitude: {:?}, is valid? {}",
+                            gll.latitude, gll.longitude, gll.valid
+                        );
+                    }
+                    _ => {
+                        // skip rest of the sentences
+                    }
                 }
             }
         }
     }
-}
 
-fn parse_sentence(sentence: &str) {
-    // 1. Parse the sentences splitting them by `\r\n`
+    #[cfg(feature = "run-gnss")]
+    fn parse_sentence(sentence: &str) {
+        // 1. Parse the sentences splitting them by `\r\n`
 
-    // for sentence in sentences.split_terminator("\r\n") {
-    let parse_result = nmea::parse_str(sentence);
+        // for sentence in sentences.split_terminator("\r\n") {
 
-    // 2. Use a match on the result and handle the sentences:
-    // - GSA
-    // - GSV
-    // - RMC
-    match parse_result {
-        Ok(ParseResult::GSA(gsa_data)) => {
-            println!("{gsa_data:?}");
+        use defmt::error;
+        let parse_result = nmea::parse_str(sentence);
+
+        // 2. Use a match on the result and handle the sentences:
+        // - GSA
+        // - GSV
+        // - RMC
+        match parse_result {
+            Ok(ParseResult::GSA(gsa_data)) => {
+                info!("{gsa_data:?}");
+            }
+            Ok(ParseResult::GSV(gsv_data)) => {
+                info!("{gsv_data:?}");
+            }
+            Ok(ParseResult::RMC(rmc_data)) => {
+                info!("{rmc_data:?}");
+            }
+            Err(err) => {
+                error!("Error: {:?}; sentence: '{}'", err, sentence);
+            }
+            _ => {
+                // skip
+            }
         }
-        Ok(ParseResult::GSV(gsv_data)) => {
-            println!("{gsv_data:?}");
-        }
-        Ok(ParseResult::RMC(rmc_data)) => {
-            println!("{rmc_data:?}");
-        }
-        Err(err) => {
-            println!("Error: {err:?}; sentence: '{sentence}'");
-        }
-        _ => {
-            // skip
-        }
+        // }
     }
-    // }
 }
 
 /// # Exercise: Receive battery percentage over UART from the power-system
@@ -671,7 +710,7 @@ fn parse_sentence(sentence: &str) {
 /// 3. prints the value on success or the error on failure (using Debug formatting),
 /// 4. Repeat the read every 20 milliseconds
 #[embassy_executor::task]
-async fn run_uart(uart: Uart<'static, UART1>) {
+async fn run_uart(uart: Uart<'static, UART1, Async>) {
     let (mut tx, mut rx) = uart.split();
     // single byte battery percentage
     // loop {
@@ -688,7 +727,7 @@ async fn run_uart(uart: Uart<'static, UART1>) {
     // }
 
     let send = async {
-        esp_println::println!("Uart writing...");
+        info!("Uart writing...");
         loop {
             let data = "Hello async serial. Enter something ended with EOT (CTRL-D).\r\n";
             // write!(&mut tx, "Hello async serial. Enter something ended with EOT (CTRL-D).\r\n").unwrap();
@@ -704,7 +743,7 @@ async fn run_uart(uart: Uart<'static, UART1>) {
     };
 
     let receive = async {
-        esp_println::println!("Uart reading...");
+        info!("Uart reading...");
         // max message size to receive
         // leave some extra space for AT-CMD characters
         const MAX_BUFFER_SIZE: usize = 10 * UART_READ_BUF_SIZE + 16;
@@ -718,13 +757,16 @@ async fn run_uart(uart: Uart<'static, UART1>) {
                     offset += len;
                     // esp_println::println!("Read: {len}, data: {:?}", &rbuf[..offset]);
                     match core::str::from_utf8(&rbuf) {
-                        Ok(received_str) => println!("Received String over UART: {received_str}"),
-                        Err(err) => println!("UTF-8 error parsing UART bytes as string: {err}"),
+                        Ok(received_str) => info!("Received String over UART: {}", received_str),
+                        Err(err) => info!(
+                            "UTF-8 error parsing UART bytes as string: {}",
+                            defmt::Debug2Format(&err)
+                        ),
                     }
 
                     offset = 0;
                 }
-                Err(e) => esp_println::println!("RX Error: {:?}", e),
+                Err(e) => info!("RX Error: {:?}", e),
             }
         }
     };
@@ -737,12 +779,13 @@ async fn run_uart(uart: Uart<'static, UART1>) {
 pub const MEASURE_TEMPERATURE_AND_HUMIDITY_EVERY: Duration = Duration::from_millis(500);
 
 #[embassy_executor::task]
+#[cfg(feature = "run-temperature-and-humidity")]
 async fn run_temp_humid(
-    i2c: I2C<'static, I2C0>,
-    // i2c: &'static I2C0Mutex,
+    i2c: I2C<'static, I2C0, hal::Blocking>,
+    // i2c: &'static I2C0BlockingMutex,
     // i2c: I2C0DeviceType,
     // i2c: &'static Mutex<CriticalSectionRawMutex, I2C<'static, I2C0>>,
-    mut delay: Delay,
+    mut delay: hal::delay::Delay,
 ) {
     // let i2c_device = I2C0DeviceType::new(i2c);
     // let i2c_device = I2cDevice::new(i2c);
@@ -759,25 +802,34 @@ async fn run_temp_humid(
     let measure_every = MEASURE_TEMPERATURE_AND_HUMIDITY_EVERY - wait_for;
     loop {
         if let Err(err) = sensor.start_measurement(shtcx::PowerMode::NormalMode) {
-            println!("(shtc3::start_measurement) Error: {err:?}");
+            info!(
+                "(shtc3::start_measurement) Error: {:?}",
+                defmt::Debug2Format(&err)
+            );
             continue;
         }
 
         Timer::after(wait_for).await;
         if let Err(err) = sensor.get_measurement_result() {
-            println!("(shtc3::start_measurement) Error: {err:?}");
+            info!(
+                "(shtc3::start_measurement) Error: {:?}",
+                defmt::Debug2Format(&err)
+            );
             continue;
         }
         let combined = match sensor.measure(shtcx::PowerMode::NormalMode, &mut delay) {
             Ok(value) => {
-                println!(
+                info!(
                     "Combined: {} °C / {} %RH",
                     value.temperature.as_degrees_celsius(),
                     value.humidity.as_percent()
                 );
             }
             Err(err) => {
-                println!("(shtc3::start_measure) Error: {err:?}");
+                info!(
+                    "(shtc3::start_measure) Error: {:?}",
+                    defmt::Debug2Format(&err)
+                );
                 // try again skipping the measure every time.
                 continue;
             }
@@ -801,6 +853,7 @@ pub const MEASURE_IMU_EVERY: Duration = Duration::from_millis(1000);
 ///
 /// ![A screenshot of ICM-42670-P datasheet's 10.1 section for IMU axes orientation.](https://raw.githubusercontent.com/AeroRust/nanosat-workshop/2b4136ba7d6730f7dd342a5f4a9a9016f93137f8/docs/assets/onboard-computer-esp32c3-icm42670-p-orientation.png)
 #[embassy_executor::task]
+#[cfg(feature = "run-imu")]
 async fn run_imu(i2c: &'static I2C0Mutex) {
     Timer::after(Duration::from_millis(1000)).await;
 
@@ -844,7 +897,7 @@ async fn run_imu(i2c: &'static I2C0Mutex) {
 }
 
 #[embassy_executor::task]
-async fn run_usb_serial_jtag(mut usb_serial: UsbSerialJtag<'static>) {
+async fn run_usb_serial_jtag(mut usb_serial: UsbSerialJtag<'static, Async>) {
     let mut label_1_value = 100;
     let mut label_2_value = 0.5;
     loop {
@@ -857,9 +910,9 @@ async fn run_usb_serial_jtag(mut usb_serial: UsbSerialJtag<'static>) {
 
         match usb_serial.write_all(string.as_bytes()).await {
             Ok(()) => {
-                println!("Wrote message: {string}");
+                info!("Wrote message: {}", string);
             }
-            Err(err) => println!("Error: {err}"),
+            Err(err) => info!("Error: {:?}", defmt::Debug2Format(&err)),
         }
         // increment values
         label_1_value += 1;
@@ -870,7 +923,10 @@ async fn run_usb_serial_jtag(mut usb_serial: UsbSerialJtag<'static>) {
 
 #[embassy_executor::task]
 // async fn run_uart_plotter(mut uart: Uart<'static, UART0>, uart_pipe: &'static DebugUartPipe) {
-async fn run_uart_plotter(mut usb_serial_jtag: UsbSerialJtag<'static>, uart_pipe: &'static DebugUartPipe) {
+async fn run_uart_plotter(
+    mut usb_serial_jtag: UsbSerialJtag<'static, Async>,
+    uart_pipe: &'static DebugUartPipe,
+) {
     loop {
         let mut buf = [0_u8; 512];
         let read = uart_pipe.read(&mut buf).await;
@@ -906,7 +962,7 @@ async fn run_uart_plotter(mut usb_serial_jtag: UsbSerialJtag<'static>, uart_pipe
     // }
 }
 
-const MEASURE_PRESSURE_EVERY: Duration = Duration::from_millis(100);
+pub const MEASURE_PRESSURE_EVERY: Duration = Duration::from_millis(100);
 
 /// Exercise: TBD
 /// We are using the BMP388 barometric pressure sensor using a DFRobot breakout board
@@ -917,47 +973,47 @@ const MEASURE_PRESSURE_EVERY: Duration = Duration::from_millis(100);
 /// Schematics: https://raw.githubusercontent.com/Strictus/DFRobot/master/SEN0251/%5BSEN0251%5D(V1.0)-SCH.pdf
 /// DFRobot Datasheet of BMP388: https://raw.githubusercontent.com/Strictus/DFRobot/master/SEN0251/BST-BMP388-DS001-01-1307765.pdf
 #[embassy_executor::task]
+#[cfg(feature = "run-pressure-and-temperature")]
 async fn run_pressure_sense(
     i2c: &'static I2C0Mutex,
     mut delay: embassy_time::Delay,
     uart_pipe: &'static DebugUartPipe,
 ) {
-    info!("Initialise BMP388 sensor...");
+    info!("(bmp388): Initialise BMP388 sensor...");
     // let i2c_device = I2cDevice::new(i2c);
     // async fn run_pressure_sense(i2c_device: I2C<'static, I2C0>, mut delay: embassy_time::Delay) {
     async fn log_sensor_settings(pressure_sensor: &mut BMP388<I2C0DeviceType, bmp388::Async>) {
         let sampling_rate = pressure_sensor.sampling_rate().await.unwrap();
-        info!("Pressure sensor sampling rate: {sampling_rate:?}");
+        info!("(bmp388): Pressure sensor sampling rate: {sampling_rate:?}");
         let power_control = pressure_sensor.power_control().await.unwrap();
-        info!("Pressure sensor power control: {power_control:?}");
+        info!("(bmp388): Pressure sensor power control: {power_control:?}");
         let status = pressure_sensor.status().await.unwrap();
-        info!("Pressure sensor status: {status:?}");
+        info!("(bmp388): Pressure sensor status: {status:?}");
         let oversampling = pressure_sensor.oversampling().await.unwrap();
-        info!("Pressure sensor oversampling: {oversampling:?}");
+        info!("(bmp388): Pressure sensor oversampling: {oversampling:?}");
         let filter = pressure_sensor.filter().await.unwrap();
-        info!("Pressure sensor filter: {filter:?}");
+        info!("(bmp388): Pressure sensor filter: {filter:?}");
         let interrupt_config = pressure_sensor.interrupt_config().await.unwrap();
-        info!("Pressure sensor Interrupt config: {interrupt_config:?}");
+        info!("(bmp388): Pressure sensor Interrupt config: {interrupt_config:?}");
     }
 
     let address = 0x77;
     loop {
         let mut pressure_sensor =
-            match bmp388::BMP388::new(I2C0DeviceType::new(i2c), address, &mut delay)
-                .await {
-                    Ok(sensor) => sensor,
-                    Err(err) => {
-                        error!("Failed to initialise BMP388 sensor: {err:?}");
-                        Timer::after(Duration::from_secs(2)).await;
-                        continue;
-                    }
-                };
+            match bmp388::BMP388::new(I2C0DeviceType::new(i2c), address, &mut delay).await {
+                Ok(sensor) => sensor,
+                Err(err) => {
+                    error!("(bmp388): Failed to initialise BMP388 sensor: {err:?}");
+                    Timer::after(Duration::from_secs(2)).await;
+                    continue;
+                }
+            };
 
-        info!(" 2 Initialise BMP388 sensor...");
+        info!("(bmp388): 2 Initialise BMP388 sensor...");
 
         // before setting up all values
         log_sensor_settings(&mut pressure_sensor).await;
-        info!(" 3 Initialise BMP388 sensor...");
+        info!("(bmp388): 3 Initialise BMP388 sensor...");
         // recommended oversampling for temperature when using x16/x32 for pressure is x2!
         // Even though they recommend other lower oversampling values for Drones, if we have a powered rocket
         // we want maximum oversampling!
@@ -993,7 +1049,7 @@ async fn run_pressure_sense(
         // After setting up all values
         log_sensor_settings(&mut pressure_sensor).await;
 
-        info!("BMP388 pressure sensor initialised!");
+        info!("(bmp388): BMP388 pressure sensor initialised!");
 
         let mut calibrated = false;
 
@@ -1019,7 +1075,7 @@ async fn run_pressure_sense(
             };
             let altitude = match (AltitudeMeasurement::SeaLevel, calibrated) {
                 (AltitudeMeasurement::Relative, false) => {
-                    info!("BMP388 Calibrating at altitude {altitude} meters");
+                    info!("(bmp388): Calibrating at altitude {altitude} meters");
                     let new_sea_level = match pressure_sensor
                         .calibrated_absolute_difference(altitude)
                         .await
@@ -1034,7 +1090,7 @@ async fn run_pressure_sense(
                         }
                     };
                     calibrated = true;
-                    info!("New Sea level set at: {new_sea_level} Pa");
+                    info!("(bmp388): New Sea level set at: {new_sea_level} Pa");
 
                     altitude
                 }
