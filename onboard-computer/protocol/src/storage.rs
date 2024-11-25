@@ -13,6 +13,7 @@
 //! 4. Messages - individually encoded messages using [`postcard`]
 //! 5. Empty bytes are filled with value `255`
 
+#[cfg(feature = "defmt-03")]
 use defmt::trace;
 
 use embedded_hal_async::spi::SpiDevice;
@@ -142,6 +143,7 @@ where
                     // we skip 1/8 blocks forward
 
                     let next_looking_index = looking_index + table_denom.max(forward_n);
+                    #[cfg(feature = "defmt-03")]
                     trace!("(forwards) Next looking index: {}", next_looking_index);
                     looking_index += table_denom.max(forward_n);
                 }
@@ -150,6 +152,7 @@ where
                 // then it's in the first `forward_n` blocks from the start
                 // we found our end-of-file!
                 (Some(index), true) => {
+                    #[cfg(feature = "defmt-03")]
                     trace!("EoF found at: {}", index);
 
                     return Some(index);
@@ -159,9 +162,11 @@ where
                     // just in case this is the block that is the first empty block
                     last_empty_index = Some(looking_index);
 
+                    #[cfg(feature = "defmt-03")]
                     trace!("last_empty is set to: {:?}", last_empty_index);
 
                     let next_looking_index = looking_index - table_denom.max(forward_n);
+                    #[cfg(feature = "defmt-03")]
                     trace!(
                         "(backwards) looking_index = {}; next_looking_index = {}",
                         looking_index,
@@ -173,6 +178,7 @@ where
                 }
                 // we found our end-of-file!
                 (Some(index), false) => {
+                    #[cfg(feature = "defmt-03")]
                     trace!("EoF found at: {}", index);
 
                     return Some(index);
@@ -232,6 +238,7 @@ where
                 let crc_valid = (block_crc == expected_crc) && expected_crc != 0;
                 // only if the crc value doesn't match,
                 // we might have found our end-of-file
+                #[cfg(feature = "defmt-03")]
                 trace!(
                 "Is CRC valid for block {:?}; CRC: {:x}; expected: {:x}; algorithm check: {:x} - CRC Ok? {}",
                 block_idx,
@@ -251,6 +258,7 @@ where
                     consecutive += 1;
 
                     if consecutive == consecutive_check {
+                        #[cfg(feature = "defmt-03")]
                         trace!("Empty block found - {}", first_block);
                         // return the first empty block which we've marked.
                         return first_block;
@@ -402,6 +410,7 @@ where
 /// # Examples
 ///
 /// ```
+/// use postcard::experimental::max_size::MaxSize;
 /// use protocol::storage::File;
 ///
 /// // Invalid and unrealistic example showing the max serialization size.
@@ -411,7 +420,7 @@ where
 /// })
 /// .expect("Should get serialized size for maxed out File");
 ///
-/// assert_eq!(15, maxed_out_size);
+/// assert_eq!(10, maxed_out_size);
 /// let somewhat_minimum_size = postcard::experimental::serialized_size(&File {
 ///     // we use 1 as in the real impl 0 should be the files index/filed state
 ///     start_idx: 1,
@@ -419,9 +428,9 @@ where
 /// })
 /// .expect("Should get serialized size for minimum File");
 ///
-/// assert_eq!(7, somewhat_minimum_size);
+/// assert_eq!(6, somewhat_minimum_size);
 ///
-/// assert_eq!(15, File::POSTCARD_MAX_SIZE);
+/// assert_eq!(10, File::POSTCARD_MAX_SIZE);
 /// ```
 // BlockIdx does not support `serde`, hence doesn't implement `Serialize` & `Deserialize`
 #[derive(
@@ -440,6 +449,25 @@ pub struct File {
 }
 
 impl File {
+    /// Create a new file between 2 blocks.
+    ///
+    /// It's good practice to keep the low block as a start block
+    /// but [`File::new`] will make sure to make it for you
+    pub fn new(between_a: u32, between_b: u32) -> Self {
+        Self {
+            start_idx: between_a.min(between_b),
+            end_idx: between_a.max(between_b),
+        }
+    }
+
+    // slower as performs division and unsafe casting!
+    pub fn new_addresses(address_a: u64, address_b: u64) -> Self {
+        Self {
+            start_idx: (address_a.min(address_b) / 512) as u32,
+            end_idx: (address_a.max(address_b) / 512) as u32,
+        }
+    }
+
     pub fn total_blocks(&self) -> u32 {
         self.end_idx - self.start_idx
     }
@@ -447,9 +475,9 @@ impl File {
 
 #[cfg(test)]
 mod tests {
-    use postcard::experimental::max_size::MaxSize;
-
     use super::*;
+
+    use postcard::experimental::max_size::MaxSize;
 
     #[test]
     fn test_file_struct_serialization_size() {
@@ -459,15 +487,15 @@ mod tests {
         })
         .expect("Should get serialized size for maxed out File");
 
-        assert_eq!(15, maxed_out_size);
+        assert_eq!(10, maxed_out_size);
         let somewhat_minimum_size = postcard::experimental::serialized_size(&File {
             start_idx: 1,
             end_idx: u32::MAX,
         })
         .expect("Should get serialized size for minimum File");
 
-        assert_eq!(7, somewhat_minimum_size);
+        assert_eq!(6, somewhat_minimum_size);
 
-        assert_eq!(15, File::POSTCARD_MAX_SIZE);
+        assert_eq!(10, File::POSTCARD_MAX_SIZE);
     }
 }
