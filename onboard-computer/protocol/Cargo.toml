@@ -36,9 +36,16 @@ GNSS = ["nmea"]
 status = []
 
 # the storage depends on Postcard and serde for serialization
-storage = ["dep:embedded-sdmmc", "dep:embedded-hal-async", "postcard", "dep:crc", "dep:num"]
+storage = ["filesystem-size-64GB", "dep:embedded-sdmmc", "dep:embedded-hal-async", "postcard", "dep:crc", "dep:num"]
 
 bin = ["std", "dep:serde_json", "dep:chrono", "dep:csv", "dep:mint", "dep:serde", "dep:clap"]
+# todo: impl
+filesystem-size-16GB = []
+# todo: impl
+filesystem-size-32GB = []
+filesystem-size-64GB = []
+# todo: impl
+filesystem-size-128GB = []
 
 [dependencies]
 serde = { workspace = true, default-features = false, optional = true }
