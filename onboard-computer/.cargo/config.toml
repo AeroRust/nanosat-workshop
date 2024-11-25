@@ -27,7 +27,7 @@ runner = "probe-rs run --chip RP2040"
 
 [build]
 
-rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
+# rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
 
 # [build]
 # target = "thumbv6m-none-eabi" # Cortex-M0 and Cortex-M0+

@@ -27,7 +27,7 @@ runner = "probe-rs run --chip RP2040"
 #   # "-C", "link-arg=-Trom_functions.x",
 # ]
 
-rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
+# rustdocflags = ["--cfg", "docsrs", "-Z", "unstable-options", "--enable-index-page"]
 
 # target = "riscv32imc-unknown-none-elf"
 
