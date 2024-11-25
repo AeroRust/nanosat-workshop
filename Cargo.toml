@@ -102,7 +102,7 @@ nmea = { version = "0.7.0", default-features = false, features = ["all-sentences
 rand = { version = "0.8", default-features = false }
 num = { version = "0.4", default-features = false }
 
-portable-atomic = { version = "1.9", default-features = false }
+portable-atomic = { version = "1.10", default-features = false }
 static_cell = { version = "2" }
 once_cell = { version = "1.0", default-features = false }
 fugit = { version = "0.3", features = ["defmt"] }
