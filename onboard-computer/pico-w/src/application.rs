@@ -39,7 +39,7 @@ use static_cell::StaticCell;
 
 use defmt::{error, info, trace, unwrap, warn};
 
-#[cfg(feature = "rp2040")]
+// #[cfg(feature = "rp2040")]
 bind_interrupts!(struct Irqs {
     UART0_IRQ => BufferedInterruptHandler<UART0>;
     UART1_IRQ => BufferedInterruptHandler<UART1>;
@@ -157,7 +157,7 @@ impl Application {
                 static TX_BUF: StaticCell<[u8; 1024]> = StaticCell::new();
                 TX_BUF.init([0u8; 1024])
             };
-            
+
             let rx_buf = {
                 static RX_BUF: StaticCell<[u8; 1024]> = StaticCell::new();
                 RX_BUF.init([0u8; 1024])
@@ -601,7 +601,7 @@ mod wifi {
     };
     use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 
-    use {cyw43_pio::PioSpi, cyw43::JoinOptions};
+    use {cyw43::JoinOptions, cyw43_pio::PioSpi};
 
     use protocol::{ReceiveMessage, SendPacket};
 
@@ -796,7 +796,10 @@ mod wifi {
             // for now, we use static IP config and not DHCP like this part
             {
                 loop {
-                    match control.join(WIFI_SSID, JoinOptions::new(WIFI_PASSWORD.as_bytes())).await {
+                    match control
+                        .join(WIFI_SSID, JoinOptions::new(WIFI_PASSWORD.as_bytes()))
+                        .await
+                    {
                         Ok(_) => {
                             info!("(wifi): Joined WiFi with SSID: {}", WIFI_SSID);
 
@@ -1424,10 +1427,13 @@ mod bmp388 {
                 let run_after = match MEASURE_PRESSURE_EVERY.checked_sub(elapsed) {
                     Some(run_after) => run_after,
                     None => {
-                        error!("(bmp388) Reading loop took longer than the measuring time set! {}/{}", elapsed, MEASURE_PRESSURE_EVERY);
+                        error!(
+                            "(bmp388) Reading loop took longer than the measuring time set! {}/{}",
+                            elapsed, MEASURE_PRESSURE_EVERY
+                        );
                         // jump straight to next iteration
                         continue;
-                    },
+                    }
                 };
                 debug!(
                     "(bmp388) Pressure and temperature reading loop took {}/{} ms",
@@ -1590,7 +1596,10 @@ pub mod gnss {
                                     .filter_map(|result| match result {
                                         Ok(sentence) => Some(sentence),
                                         Err(err) => {
-                                            trace!("GNSS receive, sentence parsing: {}", defmt::Debug2Format(&err));
+                                            trace!(
+                                                "GNSS receive, sentence parsing: {}",
+                                                defmt::Debug2Format(&err)
+                                            );
                                             None
                                         }
                                     })
@@ -2177,7 +2186,6 @@ mod bno055 {
                 // 421.394862 INFO  (bno055) ImuData { accel_data: "Vector3 { x: -9.5199995, y: 0.21, z: 0.74 }", gyro_data: "Vector3 { x: 0.125, y: -0.0625, z: 0.1875 }", quaternion: "Quaternion { v: Vector3 { x: 0.48065186, y: -0.48120117, z: -0.53027344 }, s: -0.5062256 }" }; Gravity vector: Vector3 { x: -9.7699995, y: 0.22999999, z: 0.72999996 }
                 // 446.396349 INFO  (bno055) ImuData { accel_data: "Vector3 { x: 0.45999998, y: 0.26999998, z: 9.78 }", gyro_data: "Vector3 { x: -0.0625, y: 0.0625, z: 0.0625 }", quaternion: "Quaternion { v: Vector3 { x: -0.02545166, y: 0.01361084, z: -0.70288086 }, s: -0.7107544 }" }; Gravity vector: Vector3 { x: 0.53, y: 0.16, z: 9.79 }
 
-
                 #[cfg(feature = "run-radio")]
                 if super::wifi::WIFI_CONNECTED.load(portable_atomic::Ordering::SeqCst) {
                     let message = protocol::SendPacket {
@@ -2255,10 +2263,13 @@ mod bno055 {
                 let run_after = match MEASURE_IMU_EVERY.checked_sub(elapsed) {
                     Some(run_after) => run_after,
                     None => {
-                        error!("bno055: Reading loop took longer than the measuring time set! {}/{}", elapsed, MEASURE_IMU_EVERY);
+                        error!(
+                            "bno055: Reading loop took longer than the measuring time set! {}/{}",
+                            elapsed, MEASURE_IMU_EVERY
+                        );
                         // jump straight to next iteration
                         continue;
-                    },
+                    }
                 };
                 debug!(
                     "bno055: IMU loop took {}/{} ms",
@@ -2374,7 +2385,8 @@ mod status {
                         radio_connected: None,
                         #[cfg(feature = "run-storage")]
                         storage_functional: Some(
-                            super::storage::SD_CARD_FUNCTIONAL.load(portable_atomic::Ordering::SeqCst),
+                            super::storage::SD_CARD_FUNCTIONAL
+                                .load(portable_atomic::Ordering::SeqCst),
                         ),
                         #[cfg(not(feature = "run-radio"))]
                         storage_functional: None,
@@ -2427,10 +2439,13 @@ mod status {
             let run_after = match MEASURE_STATUSES_EVERY.checked_sub(elapsed) {
                 Some(run_after) => run_after,
                 None => {
-                    error!("status: Reading loop took longer than the measuring time set! {}/{}", elapsed, MEASURE_STATUSES_EVERY);
+                    error!(
+                        "status: Reading loop took longer than the measuring time set! {}/{}",
+                        elapsed, MEASURE_STATUSES_EVERY
+                    );
                     // jump straight to next iteration
                     continue;
-                },
+                }
             };
             debug!(
                 "status: Status loop took {}/{} ms",
@@ -2504,12 +2519,12 @@ mod status {
                             if i != Self::MEASUREMENTS {
                                 Timer::after(run_after).await;
                             }
-                        },
+                        }
                         None => {
                             error!("temperature: ADC read took longer than the measuring time set! {}/{}", elapsed, Self::MEASURE_EVERY);
                             // jump straight to next iteration
                             continue;
-                        },
+                        }
                     };
                 }
             }
@@ -2639,12 +2654,16 @@ mod status {
                             if i != Self::MEASUREMENTS {
                                 Timer::after(run_after).await;
                             }
-                        },
+                        }
                         None => {
-                            error!("battery: ADC read took longer than the measuring time set! {}/{}", elapsed, Self::MEASURE_EVERY);
+                            error!(
+                                "battery: ADC read took longer than the measuring time set! {}/{}",
+                                elapsed,
+                                Self::MEASURE_EVERY
+                            );
                             // jump straight to next iteration
                             continue;
-                        },
+                        }
                     };
                 }
             }
@@ -2841,7 +2860,10 @@ mod storage {
                     }
                 };
 
-                info!("(storage) End of file found at {} for file {:?}", current_idx, file);
+                info!(
+                    "(storage) End of file found at {} for file {:?}",
+                    current_idx, file
+                );
 
                 // clear the buffer after finding End-of-file
                 buf.fill(EMPTY_BLOCK);
