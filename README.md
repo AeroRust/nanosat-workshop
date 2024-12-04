@@ -3,7 +3,7 @@
 
 ### Going through the Workshop
 
-Using [`cargo-generate` (install instructions)](https://github.com/cargo-generate/cargo-generate/https://github.com/cargo-generate/cargo-generate/?tab=readme-ov-file#installation):
+Using [`cargo-generate` (install instructions)](https://github.com/cargo-generate/cargo-generate/https://github.com/cargo-generate/cargo-generate/?tab=readme-ov-file#installation) make sure to generate a new project using the `skeleton` branch where a skeleton application with notes about the exercises will be found:
 
 ```
 # with ssh
@@ -11,6 +11,23 @@ cargo generate --branch skeleton git@github.com:AeroRust/nanosat-workshop.git
 # with https
 cargo generate --branch skeleton https://github.com/AeroRust/nanosat-workshop.git
 ```
+
+### ⚠️ Important: The state of the firmware is very unstable
+
+### Structure
+
+- [`website` aerorust.org/nanosat-workshop/](https://aerorust.org/nanosat-workshop/) - The workshop setup, information and exercises.
+
+- [onboard-computer](./onboard-computer/)
+    - [`protocol`](./onboard-computer/protocol) - common structures for use in firmware and on a host machine when, for example, you are building a CLI.
+    - [`pico-w`](./onboard-computer/pico-w) - embassy application build for running on a RP Pico W - **most up to date firmware***
+    - [`esp32c3`](./onboard-computer/esp32c3) - embassy application build for running on ESP32-c3 Rust development board from Espressif systems (currently unsupported)
+- power-system - `esp32-c3` based on Olimex's ESP32C3 dev. board - currently unsupported.
+- [`lc76`](./lc76g/) - Protocol implementation for the GNSS receiver LC76G UART used in the project for settings structures which are separate from the received `nmea` sentences.
+- [`cyw43-firmware`](./cyw43-firmware/) - RP Pico W WiFi chip firmware, taken from embassy repo.
+
+In each project you might find aliases defined in `.cargo/config.toml` file which setup various features, flags and run different applications.
+Make sure to check them out as they will ease out your development process when building and flashing your firmware.
 
 ### Development
 #### Getting started
