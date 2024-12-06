@@ -39,8 +39,8 @@ use static_cell::StaticCell;
 
 use defmt::{error, info, trace, unwrap, warn};
 
-// #[cfg(feature = "rp2040")]
-bind_interrupts!(struct Irqs {
+#[cfg(feature = "rp2040")]
+bind_interrupts!(pub(crate) struct Irqs {
     UART0_IRQ => BufferedInterruptHandler<UART0>;
     UART1_IRQ => BufferedInterruptHandler<UART1>;
     I2C0_IRQ => i2c::InterruptHandler<I2C0>;
@@ -63,12 +63,12 @@ pub type SPI0Mutex = Mutex<CriticalSectionRawMutex, Spi<'static, SPI0, spi::Asyn
 
 #[cfg(feature = "rp2040")]
 /// Stack - Core1 stack = Core 0 stack size.
-static CORE0_EXECUTOR: StaticCell<Executor> = StaticCell::new();
+pub(crate) static CORE0_EXECUTOR: StaticCell<Executor> = StaticCell::new();
 #[cfg(feature = "rp2040")]
-static CORE1_EXECUTOR: StaticCell<Executor> = StaticCell::new();
+pub(crate) static CORE1_EXECUTOR: StaticCell<Executor> = StaticCell::new();
 #[cfg(feature = "rp2040")]
 // TODO: Set a stack size for the second core
-static mut CORE1_STACK: MulticoreStack<{ 100 * 1024 }> = MulticoreStack::new();
+pub(crate) static mut CORE1_STACK: MulticoreStack<{ 100 * 1024 }> = MulticoreStack::new();
 
 pub struct Application {
     core1: CORE1,
