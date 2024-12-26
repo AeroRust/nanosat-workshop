@@ -47,13 +47,8 @@ LC76G = ["dep:lc76g", "dep:nmea"]
 
 [dependencies]
 
-hal = { package = "esp-hal", version = "0.21", features = [
-    # "async",
-    "esp32c3",
-    # "log",
-    # "portable-atomic",
-] }
-esp-hal-embassy = { version = "0.4", features = ["integrated-timers", "esp32c3"]}
+hal = { package = "esp-hal", workspace = true, optional = true }
+esp-hal-embassy = { version = "0.5", features = ["integrated-timers", "esp32c3"]}
 
 # ESP32C3
 # # debugging

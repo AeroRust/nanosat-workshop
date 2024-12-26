@@ -11,15 +11,78 @@ default-run = "pico-w"
 # default = ["rp2040", "run-gnss", "run-pressure-and-temperature", "run-radio", "run-imu", "run-usb", "arduino-plotter", "run-flash"]
 # default = ["rp2040", "run-imu", "arduino-plotter", "run-flash", "run-status"]
 # default = ["rp2040", "run-imu", "run-pressure-and-temperature", "run-usb", "arduino-plotter", "run-flash", "run-status"]
-default = ["defmt", "flash-wifi-firmware", "run-gnss", "rp2040", "run-imu", "run-pressure-and-temperature", "run-radio", "run-usb", "arduino-plotter", "run-flash", "run-status", "run-storage"]
+default = [
+    "defmt",
+    "flash-wifi-firmware",
+    "run-gnss",
+    "rp2040",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "run-radio",
+    "run-usb",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
 # default = ["rp2040", "run-pressure-and-temperature", "run-radio"]
 # default = ["rp2040", "run-pressure-and-temperature", "run-radio", "run-imu"]
 
 # imu w/ wifi w/ flash w/ storage (SD card)
-demo-obc-wifi = ["defmt", "rp2040", "flash-wifi-firmware", "run-radio", "wifi", "run-usb", "run-imu", "run-pressure-and-temperature", "arduino-plotter", "run-flash", "run-status", "run-storage"]
-demo-obc-ap = ["defmt", "rp2040", "flash-wifi-firmware", "run-radio", "wifi-ap", "run-usb", "run-gnss", "run-imu", "run-pressure-and-temperature", "arduino-plotter", "run-flash", "run-status", "run-storage"]
-demo-sky = ["defmt", "flash-wifi-firmware", "rp2040", "run-imu", "run-pressure-and-temperature", "run-radio", "arduino-plotter", "run-flash", "run-status", "run-storage"]
-demo-ground = ["defmt", "flash-wifi-firmware", "rp2040", "run-imu", "run-pressure-and-temperature", "run-radio", "run-usb", "arduino-plotter", "run-flash", "run-status", "run-storage"]
+demo-obc-wifi = [
+    "defmt",
+    "rp2040",
+    "flash-wifi-firmware",
+    "run-radio",
+    "wifi",
+    "run-usb",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
+demo-obc-ap = [
+    "defmt",
+    "rp2040",
+    "flash-wifi-firmware",
+    "run-radio",
+    "wifi-ap",
+    "run-usb",
+    "run-gnss",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
+demo-sky = [
+    "defmt",
+    "flash-wifi-firmware",
+    "rp2040",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "run-radio",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
+demo-ground = [
+    "defmt",
+    "flash-wifi-firmware",
+    "rp2040",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "run-radio",
+    "run-usb",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
 demo-imu = ["defmt", "rp2040", "run-imu", "run-flash"]
 demo-pressure = ["defmt", "rp2040", "run-pressure-and-temperature"]
 demo-sd = ["defmt", "rp2040", "run-storage"]
@@ -78,18 +141,57 @@ serial-studio = []
 arduino-plotter = []
 
 std = ["critical-section/std"]
-rp2040 = ["embassy-executor/task-arena-size-98304", "cortex-m", "critical-section/restore-state-u8", "embassy-rp/rp2040", "embassy-executor/arch-cortex-m", "dep:embassy-net"]
+rp2040 = [
+    "embassy-rp/rp2040",
+    "embassy-executor/task-arena-size-98304",
+    "cortex-m",
+    "critical-section/restore-state-u8",
+    "embassy-executor/arch-cortex-m",
+    "dep:embassy-net",
+]
+rp23 = [
+    "embassy-rp/rp235xa",
+    "embassy-rp/binary-info",
+    "embassy-executor/task-arena-size-98304",
+    "cortex-m",
+    "embassy-executor/arch-cortex-m",
+    "dep:embassy-net",
+]
 cortex-m = ["dep:cortex-m", "dep:cortex-m-rt", "dep:panic-probe"]
-defmt = ["dep:defmt", "dep:defmt-rtt", "protocol/defmt-03", "cyw43?/defmt", "cyw43-pio?/defmt", "embassy-usb?/defmt", "embassy-executor/defmt", "embassy-sync/defmt", "embassy-rp?/defmt", "embassy-net?/defmt", "embassy-embedded-hal/defmt", "embassy-time/defmt-timestamp-uptime-us", "postcard/use-defmt", "embedded-sdmmc?/defmt-log", "nmea/defmt-03"]
+defmt = [
+    "dep:defmt",
+    "dep:defmt-rtt",
+    "protocol/defmt-03",
+    "cyw43?/defmt",
+    "cyw43-pio?/defmt",
+    "embassy-usb?/defmt",
+    "embassy-executor/defmt",
+    "embassy-sync/defmt",
+    "embassy-rp?/defmt",
+    "embassy-net?/defmt",
+    "embassy-embedded-hal/defmt",
+    "embassy-time/defmt-timestamp-uptime-us",
+    "postcard/use-defmt",
+    "embedded-sdmmc?/defmt-log",
+    "nmea/defmt-03",
+]
 
 [dependencies]
 # RP2040 embassy hal
-# Make sure to enable: "intrinsics", "rom-v2-intrinsics"
-embassy-rp = { workspace = true, optional = true, features = ["rt", "unstable-pac", "time-driver", "critical-section-impl"] }
+embassy-rp = { workspace = true, optional = true, features = [
+    "rt",
+    "unstable-pac",
+    "time-driver",
+    "critical-section-impl",
+    # Make sure to enable: "intrinsics", "rom-v2-intrinsics"
+    "intrinsics",
+    "rom-v2-intrinsics",
+    "rom-func-cache",
+] }
 # Embassy
 embassy-net = { workspace = true, optional = true, features = ["dhcpv4-hostname", "dhcpv4", "udp", "medium-ip"] }
 embassy-usb = { workspace = true, default-features = false, optional = true }
-embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread", "executor-interrupt"] }
+embassy-executor = { workspace = true, features = ["executor-thread", "executor-interrupt"] }
 embassy-futures = { workspace = true }
 embassy-sync = { workspace = true }
 embassy-embedded-hal = { workspace = true }
@@ -98,7 +200,7 @@ embassy-time = { workspace = true }
 # cortex-m for RP2040
 cortex-m = { workspace = true, optional = true, features = ["inline-asm"] }
 cortex-m-rt = { workspace = true, optional = true }
-panic-probe = { workspace = true, optional = true, features = ["print-defmt"]}
+panic-probe = { workspace = true, optional = true, features = ["print-defmt"] }
 
 # Embedded hals
 embedded-hal = { workspace = true }
@@ -118,7 +220,7 @@ serde = { workspace = true, default-features = false }
 postcard = { workspace = true }
 postcard-rpc = { workspace = true }
 
-protocol = { version = "0.1", path = "../protocol", features = ["postcard", "defmt-03"]}
+protocol = { version = "0.1", path = "../protocol", features = ["postcard", "defmt-03"] }
 # datarate = { version = "0.1", path = "../../datarate" }
 
 # Sensors, peripherals and parsers
@@ -143,7 +245,7 @@ heapless.workspace = true
 # Random generators
 rand = { workspace = true, optional = true }
 
-portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"]}
+portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"] }
 critical-section.workspace = true
 
 [build-dependencies]

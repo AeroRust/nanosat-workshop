@@ -28,11 +28,16 @@ fn main() {
     // on the linker search path.
     let out = &PathBuf::from(env::var_os("OUT_DIR").unwrap());
 
-    #[cfg(feature = "rp2040")]
+    #[cfg(any(feature = "rp2040", feature = "rp23"))]
     {
+        #[cfg(feature = "rp2040")]
+        let memory_x_content = include_bytes!("memory.x");
+        #[cfg(feature = "rp23")]
+        let memory_x_content = include_bytes!("memory_rp23.x");
+
         File::create(out.join("memory.x"))
             .unwrap()
-            .write_all(include_bytes!("memory.x"))
+            .write_all(memory_x_content)
             .unwrap();
         println!("cargo:rustc-link-search={}", out.display());
 
@@ -40,11 +45,16 @@ fn main() {
         // any file in the project changes. By specifying `memory.x`
         // here, we ensure the build script is only re-run when
         // `memory.x` is changed.
+        #[cfg(feature = "rp2040")]
         println!("cargo:rerun-if-changed=memory.x");
+        #[cfg(feature = "rp23")]
+        println!("cargo:rerun-if-changed=memory_rp23.x");
     }
 
     println!("cargo:rustc-link-arg-bins=--nmagic");
     println!("cargo:rustc-link-arg-bins=-Tlink.x");
+    // we do not need it for RP23xx
+    #[cfg(feature = "rp2040")]
     println!("cargo:rustc-link-arg-bins=-Tlink-rp.x");
     #[cfg(feature = "defmt")]
     println!("cargo:rustc-link-arg-bins=-Tdefmt.x");
