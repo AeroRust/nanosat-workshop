@@ -3,6 +3,13 @@
 # however, we switched to stable and set the area size with a feature.
 # KEEP UP TO DATE with the `website` workflow!
 channel = "1.82"
-components = [ "cargo", "rust-src", "rustfmt", "llvm-tools" ]
+components = ["cargo", "rust-src", "rustfmt", "llvm-tools"]
 
-targets = ["thumbv6m-none-eabi", "riscv32imc-unknown-none-elf"]
+targets = [
+    # Target for: Pico & Pico W
+    "thumbv6m-none-eabi",
+    # target for Pico 2
+    "thumbv8m.main-none-eabihf",
+    # target for Esp32-c3
+    "riscv32imc-unknown-none-elf",
+]
