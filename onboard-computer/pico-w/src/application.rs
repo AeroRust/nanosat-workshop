@@ -4,7 +4,7 @@ use embassy_embedded_hal::shared_bus::{
     asynch::i2c::I2cDevice, blocking::i2c::I2cDevice as BlockingI2cDevice,
 };
 
-// #[cfg(feature = "rp2040")]
+// #[cfg(any(feature = "rp2040", feature = "rp23"))]
 use embassy_executor::Executor;
 use embassy_rp::{
     adc, bind_interrupts,
@@ -23,7 +23,7 @@ use embassy_rp::{
     },
     usb::Driver,
 };
-#[cfg(feature = "rp2040")]
+#[cfg(any(feature = "rp2040", feature = "rp23"))]
 use embassy_sync::{
     blocking_mutex::{
         raw::{CriticalSectionRawMutex, NoopRawMutex},
@@ -39,7 +39,7 @@ use static_cell::StaticCell;
 
 use defmt::{error, info, trace, unwrap, warn};
 
-#[cfg(feature = "rp2040")]
+#[cfg(any(feature = "rp2040", feature = "rp23"))]
 bind_interrupts!(pub(crate) struct Irqs {
     UART0_IRQ => BufferedInterruptHandler<UART0>;
     UART1_IRQ => BufferedInterruptHandler<UART1>;
@@ -61,12 +61,12 @@ pub type I2C1Mutex = Mutex<CriticalSectionRawMutex, I2c<'static, I2C1, i2c::Asyn
 
 pub type SPI0Mutex = Mutex<CriticalSectionRawMutex, Spi<'static, SPI0, spi::Async>>;
 
-#[cfg(feature = "rp2040")]
+#[cfg(any(feature = "rp2040", feature = "rp23"))]
 /// Stack - Core1 stack = Core 0 stack size.
 pub(crate) static CORE0_EXECUTOR: StaticCell<Executor> = StaticCell::new();
-#[cfg(feature = "rp2040")]
+#[cfg(any(feature = "rp2040", feature = "rp23"))]
 pub(crate) static CORE1_EXECUTOR: StaticCell<Executor> = StaticCell::new();
-#[cfg(feature = "rp2040")]
+#[cfg(any(feature = "rp2040", feature = "rp23"))]
 // TODO: Set a stack size for the second core
 pub(crate) static mut CORE1_STACK: MulticoreStack<{ 100 * 1024 }> = MulticoreStack::new();
 
@@ -381,7 +381,7 @@ impl Application {
     }
 }
 
-#[cfg(feature = "rp2040")]
+#[cfg(any(feature = "rp2040", feature = "rp23"))]
 #[embassy_executor::task()]
 async fn print() {
     loop {
@@ -390,7 +390,7 @@ async fn print() {
     }
 }
 
-#[cfg(feature = "rp2040")]
+#[cfg(any(feature = "rp2040", feature = "rp23"))]
 #[embassy_executor::task()]
 async fn blinky(mut led: Output<'static>) {
     loop {
