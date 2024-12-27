@@ -1,12 +1,11 @@
 [env]
-# ESP_LOGLEVEL="warn"
-ESP_LOGLEVEL="info"
+ESP_LOGLEVEL = "info"
 DEFMT_LOG = "info"
 
 [target.riscv32imc-unknown-none-elf]
 runner = "espflash flash --monitor -L defmt"
 rustflags = [
-    # enable defmt
+  # enable defmt
   "-C", "link-arg=-Tdefmt.x",
 
   "-C",
