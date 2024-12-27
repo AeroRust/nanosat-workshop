@@ -20,6 +20,7 @@ defmt-03 = [
     "embedded-sdmmc?/defmt-log",
     "embedded-hal-async?/defmt-03",
     "heapless/defmt-03",
+    "postcard/use-defmt"
 ]
 serde = ["dep:serde", "bno055?/serde", "bmp388?/serde", "nmea?/serde", "mint?/serde", "chrono?/serde", "num?/serde"]
 postcard = ["dep:postcard", "dep:postcard-rpc", "serde"]
