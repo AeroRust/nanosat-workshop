@@ -2,6 +2,7 @@ use core::{fmt::Write as _, ops::Deref};
 
 #[cfg(feature = "run-pressure-and-temperature")]
 use bmp388::BMP388;
+use esp_hal_embassy::Executor;
 #[cfg(feature = "run-gnss")]
 use lc76g::GnssMessage;
 
@@ -15,24 +16,16 @@ use embassy_sync::{
 };
 use embassy_time::{Duration, Timer};
 
-use hal::{
-    clock::{ClockControl, Clocks},
+use esp_hal::{
+    clock::Clocks,
     delay::Delay,
-    gpio::{Gpio1, Gpio19, Gpio2, Gpio3, Gpio4, Gpio5, Gpio6, Gpio7, Gpio9},
-    gpio::{Input, Io, Level, Output},
-    i2c::I2C,
-    //     i2c::I2C,
+    gpio::{GpioPin, Input, Io, Level, Output},
+    i2c::{self, master::I2c},
     interrupt::{self, InterruptHandler, Priority},
     peripherals::{Interrupt, Peripherals, I2C0, UART0, UART1, USB_DEVICE},
     prelude::*,
-    //     // otg_fs::{UsbBus, USB},
     rng::Rng,
     rtc_cntl::Rtc,
-    //     prelude::*,
-    system::SystemControl,
-    //     Uart,
-    //     IO,
-    timer::systimer::SystemTimer,
     timer::timg::TimerGroup,
     uart::{self, Uart},
     usb_serial_jtag::UsbSerialJtag,
@@ -47,10 +40,10 @@ use icm42670::accelerometer::Accelerometer;
 use defmt::{debug, error, info, trace, warn};
 #[cfg(feature = "run-gnss")]
 use nmea::ParseResult;
-use static_cell::make_static;
+use static_cell::StaticCell;
 
 /// The Rust ESP32-C3 board has onboard LED on GPIO 7
-pub type OnboardLed = Output<'static, Gpio7>;
+pub type OnboardLed = Output<'static, GpioPin<7>>;
 
 static MOCK_SENTENCES: &'static str = include_str!("../../../tests/nmea.log");
 
@@ -63,28 +56,28 @@ const UART_AT_CMD: u8 = 0x04;
 pub const NMEA_SENTENCE_TERMINATOR: &str = "\r\n";
 
 pub type I2C0AsyncDeviceType =
-    I2cDevice<'static, CriticalSectionRawMutex, I2C<'static, I2C0, hal::Async>>;
-pub type I2C0AsyncMutex = Mutex<CriticalSectionRawMutex, I2C<'static, I2C0, hal::Async>>;
+    I2cDevice<'static, CriticalSectionRawMutex, I2c<'static, esp_hal::Async, I2C0>>;
+pub type I2C0AsyncMutex = Mutex<CriticalSectionRawMutex, I2c<'static, esp_hal::Async, I2C0>>;
 
 pub type I2C0BlockingMutex =
-    critical_section::Mutex<core::cell::RefCell<I2C<'static, I2C0, hal::Blocking>>>;
+    critical_section::Mutex<core::cell::RefCell<I2c<'static, esp_hal::Blocking, I2C0>>>;
 pub type I2C0BlockingDeviceType =
-    embedded_hal_bus::i2c::CriticalSectionDevice<'static, I2C<'static, I2C0, hal::Async>>;
+    embedded_hal_bus::i2c::CriticalSectionDevice<'static, I2c<'static, esp_hal::Async, I2C0>>;
 
 pub type I2C0Mutex = I2C0AsyncMutex;
 pub type I2C0DeviceType = I2C0AsyncDeviceType;
 
 /// GNSS: RST pin
-// pub type GnssRSTPin = Gpio19<Output<PushPull>>;
-pub type GnssRSTPin = Gpio19;
+// pub type GnssRSTPin = GpioPin<19><Output<PushPull>>;
+pub type GnssRSTPin = GpioPin<19>;
 
 /// GNSS: Board to GNSS TX pin is 5
 // pub type GnssRXPin = Gpio5<Output<PushPull>>;
-pub type GnssRXPin = Gpio5;
+pub type GnssRXPin = GpioPin<5>;
 
 /// GNSS: GNSS to board RX pin is 6
 // pub type GnssTXPin = Gpio6<Input<Floating>>;
-pub type GnssTXPin = Gpio6;
+pub type GnssTXPin = GpioPin<6>;
 
 #[cfg(feature = "run-gnss")]
 pub type GnssUartSenderChannel = Channel<CriticalSectionRawMutex, GnssMessage, 100>;
@@ -92,23 +85,23 @@ pub type GnssUartSenderChannel = Channel<CriticalSectionRawMutex, GnssMessage, 1
 /// Sd Card: Board to card Data In (DI) Pin
 ///
 /// SPI MOSI pin
-pub type SDCardDIPin = Gpio1;
+pub type SDCardDIPin = GpioPin<1>;
 
 /// Sd Card: Card to board Data Out (DO) Pin
 ///
 /// SPI MISO pin
 // pub type SDCardDOPin = Gpio2<Input<PushPull>>;
-pub type SDCardDOPin = Gpio2;
+pub type SDCardDOPin = GpioPin<2>;
 
 /// Sd Card: SCLK (Clock) SPI Pin
 ///
 /// SPI Clock Pin
 // pub type SDCardCLKPin = Gpio3<Input<PushPull>>;
-pub type SDCardCLKPin = Gpio3;
+pub type SDCardCLKPin = GpioPin<3>;
 
 /// Sd Card: Chip Select Pin for SD card
 // pub type SDCardCSPin = Gpio1<Input<PushPull>>;
-pub type SDCardCSPin = Gpio1;
+pub type SDCardCSPin = GpioPin<1>;
 
 pub type DebugUartPipe = Pipe<NoopRawMutex, 1024>;
 
@@ -116,7 +109,6 @@ pub type DebugUartPipe = Pipe<NoopRawMutex, 1024>;
 // pub type I2C0DeviceType = I2C0BlockingDeviceType;
 
 pub struct Application {
-    clocks: Clocks<'static>,
     // TODO: Uncomment when you create a `Uart` instance of the `UART0` peripheral
     // uart: Uart<'static, UART0>,
     // TODO: Uncomment when you create a `Uart` instance of the `UART1` peripheral
@@ -132,20 +124,17 @@ pub struct Application {
     #[cfg(feature = "run-pressure-and-temperature")]
     i2c: &'static I2C0Mutex,
     #[cfg(feature = "run-temperature-and-humidity")]
-    i2c: I2C<'static, I2C0, hal::Blocking>,
+    i2c: I2c<'static, esp_hal::Blocking, I2C0>,
     // i2c: &'static I2C0BlockingMutex,
 }
 
 impl Application {
     /// Initialises all the peripherals which the [`Application`] will use.
     pub fn init(peripherals: Peripherals) -> Self {
-        let system = SystemControl::new(peripherals.SYSTEM);
-        let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
-
-        let mut rtc = Rtc::new(peripherals.LPWR, None);
-        let mut timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks, None);
+        let mut rtc = Rtc::new(peripherals.LPWR);
+        let mut timer_group0 = TimerGroup::new(peripherals.TIMG0);
         let mut wdt0 = timer_group0.wdt;
-        let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks, None);
+        let timer_group1 = TimerGroup::new(peripherals.TIMG1);
         let mut wdt1 = timer_group1.wdt;
 
         // Disable watchdog timers
@@ -154,16 +143,15 @@ impl Application {
         wdt0.disable();
         wdt1.disable();
 
-        let timg0 = TimerGroup::new(peripherals.TIMG0);
-        esp_hal_embassy::init(timg0.timer0);
+        esp_hal_embassy::init(timer_group0.timer0);
 
         // Setup peripherals for application
-        let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
+        // let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
 
         // Onboard LED
         // Rust ESP32-C3 schematics: https://raw.githubusercontent.com/esp-rs/esp-rust-board/master/assets/rust_board_v1_pin-layout.png
         // Set GPIO7 as an output, and set its state high initially.
-        let mut onboard_led = Output::new(io.pins.gpio7, Level::High);
+        let mut onboard_led = Output::new_typed(peripherals.GPIO7, Level::High);
 
         // Setup Random Generator for GNSS Reading
         // Hal example: https://github.com/esp-rs/esp-hal/blob/main/esp32c3-hal/examples/rng.rs
@@ -176,23 +164,23 @@ impl Application {
         // TODO: Configure the UART 1 peripheral
         // let mut uart1 = todo!("Configure UART 1 at pins 0 (TX) and 1 (RX) with `None` or default for the `Config`");
 
-        let mut uart1 = Uart::new_async_with_config(
+        let mut uart1 = Uart::new_with_config(
             peripherals.UART1,
-            uart::config::Config {
+            uart::Config {
                 // default baudrate
                 // https://files.waveshare.com/upload/0/06/Quectel_LC26G%26LC76G%26LC86G_GNSS_Protocol_Specification_V1.0.0_Preliminary.pdf
                 baudrate: 115200,
-                data_bits: uart::config::DataBits::DataBits8,
-                parity: uart::config::Parity::ParityNone,
-                stop_bits: uart::config::StopBits::STOP1,
+                data_bits: uart::DataBits::DataBits8,
+                parity: uart::Parity::ParityNone,
+                stop_bits: uart::StopBits::STOP1,
+                rx_fifo_full_threshold: UART_READ_BUF_SIZE as u16,
                 ..Default::default()
             },
-            Some(uart::TxRxPins::new_tx_rx(io.pins.gpio5, io.pins.gpio6)),
-            &clocks,
-        );
-        uart1
-            .set_rx_fifo_full_threshold(UART_READ_BUF_SIZE as u16)
-            .unwrap();
+            peripherals.GPIO6,
+            peripherals.GPIO5,
+        )
+        .unwrap()
+        .into_async();
         interrupt::enable(Interrupt::UART1, Priority::Priority1).unwrap();
 
         // let uart0 = {
@@ -218,9 +206,8 @@ impl Application {
         //     uart0
         // };
 
-        let mut usb_serial_jtag = UsbSerialJtag::new_async(peripherals.USB_DEVICE);
+        let mut usb_serial_jtag = UsbSerialJtag::new(peripherals.USB_DEVICE).into_async();
         usb_serial_jtag.listen_rx_packet_recv_interrupt();
-        // timer_group0.timer0.start(1u64.secs());
         interrupt::enable(Interrupt::USB_DEVICE, interrupt::Priority::Priority1).unwrap();
 
         // let usb = USB::new(
@@ -243,56 +230,69 @@ impl Application {
 
         #[cfg(feature = "run-pressure-and-temperature")]
         let i2c = {
-            let i2c0 = I2C::new_async(
+            let i2c0 = I2c::new(
                 peripherals.I2C0,
-                io.pins.gpio10,
-                io.pins.gpio8,
-                400_u32.kHz(),
-                &clocks,
-            );
+                i2c::master::Config {
+                    frequency: 400_u32.kHz(),
+                    ..Default::default()
+                },
+            )
+            .with_sda(peripherals.GPIO10)
+            .with_scl(peripherals.GPIO18)
+            .into_async();
             interrupt::enable(Interrupt::I2C_EXT0, interrupt::Priority::Priority2).unwrap();
 
-            make_static!(Mutex::<CriticalSectionRawMutex, _>::new(i2c0))
+            static INSTANCE: StaticCell<Mutex<CriticalSectionRawMutex, I2c<'static, Async>>> =
+                StaticCell::new();
+
+            INSTANCE.init(Mutex::new(i2c0))
         };
         #[cfg(feature = "run-temperature-and-humidity")]
         let i2c = {
-            let i2c0 = I2C::new(
+            let i2c0 = I2c::new_typed(
                 peripherals.I2C0,
-                io.pins.gpio10,
-                io.pins.gpio8,
-                400_u32.kHz(),
-                &clocks,
-                None,
-            );
+                i2c::master::Config {
+                    frequency: 400_u32.kHz(),
+                    ..Default::default()
+                },
+            )
+            .with_sda(peripherals.GPIO10)
+            .with_scl(peripherals.GPIO18);
             interrupt::enable(Interrupt::I2C_EXT0, interrupt::Priority::Priority2).unwrap();
 
-            // let mutex = I2C0BlockingMutex::new(core::cell::RefCell::new(i2c0));
-
-            // make_static!(mutex)
             i2c0
         };
         info!("Peripherals initialized");
         Self {
-            clocks,
             // uart: uart0,
             #[cfg(feature = "run-gnss")]
             gnss_uart: uart1,
             usb_serial_jtag,
             rng,
             onboard_led,
+            #[cfg(any(feature = "run-temperature-and-humidity", feature = "run-pressure-and-temperature"))]
             i2c,
         }
     }
 
     /// Runs the application by spawning each of the [`Application`]'s tasks
     pub fn run(self) -> ! {
-        // let executor = make_static!(esp_hal_embassy::Executor::new());
-        let executor = make_static!(esp_hal_embassy::Executor::new());
+        let executor = {
+            static INSTANCE: StaticCell<Executor> = StaticCell::new();
+
+            INSTANCE.init(Executor::new())
+        };
 
         executor.run(|spawner| {
-            let status_channel = make_static!(StatusChannel::new());
+            let status_channel = {
+                static INSTANCE: StaticCell<StatusChannel> = StaticCell::new();
+                INSTANCE.init(StatusChannel::new())
+            };
 
-            let uart_pipe = make_static!(DebugUartPipe::new());
+            let uart_pipe = {
+                static INSTANCE: StaticCell<DebugUartPipe> = StaticCell::new();
+                INSTANCE.init(DebugUartPipe::new())
+            };
 
             spawner.must_spawn(run_blinky(self.onboard_led, status_channel));
             spawner.must_spawn(run_uart_plotter(self.usb_serial_jtag, uart_pipe));
@@ -300,9 +300,15 @@ impl Application {
 
             #[cfg(feature = "run-gnss")]
             {
-                let gnss_send_channel = make_static!(GnssUartSenderChannel::new());
+                let gnss_send_channel = {
+                    static INSTANCE: StaticCell<GnssUartSenderChannel> = StaticCell::new();
+                    INSTANCE.init(GnssUartSenderChannel::new())
+                };
 
-                let gnss_handler_channel = make_static!(GnssHandlerChannel::new());
+                let gnss_handler_channel = {
+                    static INSTANCE: StaticCell<GnssHandlerChannel> = StaticCell::new();
+                    INSTANCE.init(GnssHandlerChannel::new())
+                };
 
                 spawner.must_spawn(run_gnss(
                     self.gnss_uart,
@@ -322,7 +328,7 @@ impl Application {
             spawner.must_spawn(run_temp_humid(
                 // I2cDevice::new(self.i2c),
                 self.i2c,
-                hal::delay::Delay::new(&self.clocks),
+                esp_hal::delay::Delay::new(),
             ));
 
             // spawner.must_spawn(run_usb_serial_jtag(self.usb_serial_jtag));
@@ -710,8 +716,8 @@ mod gnss {
 /// 3. prints the value on success or the error on failure (using Debug formatting),
 /// 4. Repeat the read every 20 milliseconds
 #[embassy_executor::task]
-async fn run_uart(uart: Uart<'static, UART1, Async>) {
-    let (mut tx, mut rx) = uart.split();
+async fn run_uart(uart: Uart<'static, Async, UART1>) {
+    let (mut rx, mut tx) = uart.split();
     // single byte battery percentage
     // loop {
     //     let mut buf = [0; 256];
@@ -781,11 +787,11 @@ pub const MEASURE_TEMPERATURE_AND_HUMIDITY_EVERY: Duration = Duration::from_mill
 #[embassy_executor::task]
 #[cfg(feature = "run-temperature-and-humidity")]
 async fn run_temp_humid(
-    i2c: I2C<'static, I2C0, hal::Blocking>,
+    i2c: I2c<'static, esp_hal::Blocking, I2C0>,
     // i2c: &'static I2C0BlockingMutex,
     // i2c: I2C0DeviceType,
-    // i2c: &'static Mutex<CriticalSectionRawMutex, I2C<'static, I2C0>>,
-    mut delay: hal::delay::Delay,
+    // i2c: &'static Mutex<CriticalSectionRawMutex, I2c<'static, I2C0>>,
+    mut delay: esp_hal::delay::Delay,
 ) {
     // let i2c_device = I2C0DeviceType::new(i2c);
     // let i2c_device = I2cDevice::new(i2c);
@@ -793,7 +799,7 @@ async fn run_temp_humid(
 
     // let mut sensor = shtcx::shtc3(i2c_device);
     let mut sensor = shtcx::shtc3(i2c);
-    // let mut delay = hal::Delay::new;
+    // let mut delay = esp_hal::Delay::new;
 
     let wait_for_measure_micros =
         shtcx::max_measurement_duration(&sensor, shtcx::PowerMode::NormalMode);
@@ -865,7 +871,7 @@ async fn run_imu(i2c: &'static I2C0Mutex) {
         {
             Ok(imu) => imu,
             Err(err) => {
-                error!("Error initializing IMU: {err:?}");
+                error!("Error initializing IMU: {:?}", err);
                 Timer::after(Duration::from_secs(5)).await;
                 continue;
             }
@@ -876,19 +882,22 @@ async fn run_imu(i2c: &'static I2C0Mutex) {
             let accelerometer = imu.accel_norm_async().await;
             match (gyro_norm, accelerometer) {
                 (Ok(gyro_norm), Ok(accelerometer)) => {
-                    info!("IMU: Gyro norm: {gyro_norm:?}; Accel: {accelerometer:?}")
+                    info!(
+                        "IMU: Gyro norm: {:?}; Accel: {:?}",
+                        gyro_norm, accelerometer
+                    )
                 }
                 (Err(gyro_err), Ok(accelerometer)) => {
                     println!("IMU: Gyro err: {gyro_err:?}");
-                    error!("IMU: Accelerometer: {accelerometer:?}");
+                    error!("IMU: Accelerometer: {:?}", accelerometer);
                 }
                 (Ok(gyro_norm), Err(accel_err)) => {
-                    info!("IMU: Gyro norm: {gyro_norm:?}");
-                    error!("IMU: Accelerometer error: {accel_err:?}");
+                    info!("IMU: Gyro norm: {:?}", gyro_norm);
+                    error!("IMU: Accelerometer error: {:?}", accel_err);
                 }
                 (Err(gyro_err), Err(accel_err)) => {
-                    error!("IMU: Gyro error: {gyro_err:?}");
-                    error!("IMU: Accelerometer error: {accel_err:?}");
+                    error!("IMU: Gyro error: {:?}", gyro_err);
+                    error!("IMU: Accelerometer error: {:?}", accel_err);
                 }
             }
             Timer::after(MEASURE_IMU_EVERY).await;
@@ -981,20 +990,29 @@ async fn run_pressure_sense(
 ) {
     info!("(bmp388): Initialise BMP388 sensor...");
     // let i2c_device = I2cDevice::new(i2c);
-    // async fn run_pressure_sense(i2c_device: I2C<'static, I2C0>, mut delay: embassy_time::Delay) {
+    // async fn run_pressure_sense(i2c_device: I2c<'static, I2C0>, mut delay: embassy_time::Delay) {
     async fn log_sensor_settings(pressure_sensor: &mut BMP388<I2C0DeviceType, bmp388::Async>) {
         let sampling_rate = pressure_sensor.sampling_rate().await.unwrap();
-        info!("(bmp388): Pressure sensor sampling rate: {sampling_rate:?}");
+        info!(
+            "(bmp388): Pressure sensor sampling rate: {:?}",
+            sampling_rate
+        );
         let power_control = pressure_sensor.power_control().await.unwrap();
-        info!("(bmp388): Pressure sensor power control: {power_control:?}");
+        info!(
+            "(bmp388): Pressure sensor power control: {:?}",
+            power_control
+        );
         let status = pressure_sensor.status().await.unwrap();
-        info!("(bmp388): Pressure sensor status: {status:?}");
+        info!("(bmp388): Pressure sensor status: {:?}", status);
         let oversampling = pressure_sensor.oversampling().await.unwrap();
-        info!("(bmp388): Pressure sensor oversampling: {oversampling:?}");
+        info!("(bmp388): Pressure sensor oversampling: {:?}", oversampling);
         let filter = pressure_sensor.filter().await.unwrap();
-        info!("(bmp388): Pressure sensor filter: {filter:?}");
+        info!("(bmp388): Pressure sensor filter: {:?}", filter);
         let interrupt_config = pressure_sensor.interrupt_config().await.unwrap();
-        info!("(bmp388): Pressure sensor Interrupt config: {interrupt_config:?}");
+        info!(
+            "(bmp388): Pressure sensor Interrupt config: {:?}",
+            interrupt_config
+        );
     }
 
     let address = 0x77;
@@ -1003,7 +1021,7 @@ async fn run_pressure_sense(
             match bmp388::BMP388::new(I2C0DeviceType::new(i2c), address, &mut delay).await {
                 Ok(sensor) => sensor,
                 Err(err) => {
-                    error!("(bmp388): Failed to initialise BMP388 sensor: {err:?}");
+                    error!("(bmp388): Failed to initialise BMP388 sensor: {:?}", err);
                     Timer::after(Duration::from_secs(2)).await;
                     continue;
                 }
@@ -1025,7 +1043,7 @@ async fn run_pressure_sense(
         //     .unwrap();
         // recommended PowerMode for drones is Normal
 
-        // async fn force(sensor: &mut bmp388::BMP388<I2C<'static, I2C0>, bmp388::Async>) {
+        // async fn force(sensor: &mut bmp388::BMP388<I2c<'static, I2C0>, bmp388::Async>) {
         async fn force(sensor: &mut bmp388::BMP388<I2C0DeviceType, bmp388::Async>) {
             sensor
                 .set_power_control(bmp388::PowerControl {
@@ -1075,7 +1093,7 @@ async fn run_pressure_sense(
             };
             let altitude = match (AltitudeMeasurement::SeaLevel, calibrated) {
                 (AltitudeMeasurement::Relative, false) => {
-                    info!("(bmp388): Calibrating at altitude {altitude} meters");
+                    info!("(bmp388): Calibrating at altitude {} meters", altitude);
                     let new_sea_level = match pressure_sensor
                         .calibrated_absolute_difference(altitude)
                         .await
@@ -1090,7 +1108,7 @@ async fn run_pressure_sense(
                         }
                     };
                     calibrated = true;
-                    info!("(bmp388): New Sea level set at: {new_sea_level} Pa");
+                    info!("(bmp388): New Sea level set at: {} Pa", new_sea_level);
 
                     altitude
                 }

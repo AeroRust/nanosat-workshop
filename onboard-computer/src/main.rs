@@ -1,14 +1,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(not(feature = "std"), no_main)]
-#![feature(type_alias_impl_trait)]
-#![feature(impl_trait_in_assoc_type)]
 
 #[cfg(feature = "esp32-c3")]
 use esp_backtrace as _;
 #[cfg(feature = "esp32-c3")]
 use esp_println as _;
 
-#[cfg(all(feature = "rp2040", feature = "defmt"))]
+#[cfg(any(all(feature = "rp2040", feature = "defmt"), all(feature = "esp32-c3", feature = "defmt")))]
 use defmt_rtt as _;
 
 #[cfg(feature = "cortex-m")]
@@ -19,12 +17,16 @@ use panic_probe as _;
 // static EXECUTOR: StaticCell<Executor> = StaticCell::new();
 
 #[cfg(feature = "esp32-c3")]
-#[hal::entry]
+#[esp_hal::entry]
 fn main() -> ! {
     use esp32c3::Application;
-    use hal::peripherals::Peripherals;
     // esp_println::println!("Init!");
-    let peripherals = Peripherals::take();
+    let peripherals = esp_hal::init({
+        let mut config = esp_hal::Config::default();
+        // Configure the CPU to run at the maximum frequency.
+        config.cpu_clock = esp_hal::prelude::CpuClock::max();
+        config
+    });
 
     #[cfg(feature = "log")]
     {

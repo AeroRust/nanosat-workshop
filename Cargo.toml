@@ -41,7 +41,7 @@ esp-backtrace = { version = "0.14", features = [
     "panic-handler",
     # "println"
 ] }
-esp-println = { version = "0.12", features = ["esp32c3"] }
+esp-println = { version = "0.12", default-features = false, features = ["critical-section", "esp32c3"] }
 # Allocator
 # esp-alloc = { version = "0.3.0", features = ["oom-handler"] }
 

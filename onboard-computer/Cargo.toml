@@ -16,10 +16,14 @@ default-run = "onboard-computer"
 # esp32-c3 = ["riscv", "dep:shtcx", "dep:icm42670", "dep:log", "dep:esp-backtrace",
 esp32-c3 = [
     "dep:esp32c3",
+    "esp32c3/run-temperature-and-humidity",
+
     "esp32c3/riscv",
     "dep:esp-backtrace",
     "dep:esp-println",
-    "dep:hal",
+    "esp-println/esp32c3",
+    "dep:esp-hal",
+    "defmt"
 ]
 # TODO: fix me!
 pico-w = ["cortex-m", "dep:pico-w", "rp2040", "defmt"]
@@ -58,8 +62,8 @@ defmt = [
 
 log = [
     "dep:log",
-    "esp32c3/log",
-    "esp-println/log",
+    "esp32c3?/log",
+    "esp-println?/log",
 ]
 
 std = [
@@ -84,10 +88,10 @@ cortex-m = { workspace = true, optional = true }
 cortex-m-rt = { workspace = true, optional = true }
 
 # ESP32C3
-hal = { package = "esp-hal", workspace = true, optional = true }
+esp-hal = { workspace = true, optional = true }
 # debugging
 esp-backtrace = { workspace = true, optional = true }
-esp-println = { workspace = true, optional = true }
+esp-println = { workspace = true, optional = true, default-features = false, features = ["critical-section", "jtag-serial"] }
 
 log = { workspace = true, optional = true }
 

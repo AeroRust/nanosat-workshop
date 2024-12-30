@@ -1147,7 +1147,9 @@ name = "esp32c3"
 version = "0.1.0"
 dependencies = [
  "bmp388",
+ "critical-section",
  "defmt",
+ "defmt-rtt",
  "embassy-embedded-hal",
  "embassy-executor",
  "embassy-futures 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1157,8 +1159,10 @@ dependencies = [
  "embassy-time",
  "embedded-hal-bus",
  "embedded-io-async",
+ "esp-backtrace",
  "esp-hal",
  "esp-hal-embassy",
+ "esp-println",
  "heapless 0.8.0",
  "icm42670",
  "lc76g",

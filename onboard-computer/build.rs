@@ -31,7 +31,12 @@ fn main() {
         println!("cargo:rustc-link-arg-bins=-Tlink.x");
         println!("cargo:rustc-link-arg-bins=-Tlink-rp.x");
     }
-    #[cfg(feature = "defmt")]
+
+    #[cfg(feature = "esp32-c3")]
+    {
+        println!("cargo:rustc-link-arg=-Tlinkall.x");
+    }
+    #[cfg(all(feature = "defmt", not(feature = "esp32-c3")))]
     println!("cargo:rustc-link-arg-bins=-Tdefmt.x");
 
     println!("cargo:rerun-if-changed=build.rs");
