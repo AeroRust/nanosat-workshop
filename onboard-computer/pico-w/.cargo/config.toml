@@ -23,5 +23,6 @@ rustdocflags = [
 [alias]
 # run-firmware = "run --target thumbv6m-none-eabi --no-default-features -F firmware"
 run-pico-w = "run --target thumbv6m-none-eabi --release --no-default-features -F rp2040 -F defmt"
-run-demo-sd = "run --target thumbv6m-none-eabi --release --no-default-features -F demo-sd"
+run-demo-sd = "run --target thumbv6m-none-eabi --release --no-default-features -F rp2040 -F demo-sd"
+run-rp23-demo-sd = "run --target thumbv8m.main-none-eabihf --release --no-default-features -F rp23 -F demo-sd"
 

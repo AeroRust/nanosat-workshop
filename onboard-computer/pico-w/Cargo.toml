@@ -85,7 +85,7 @@ demo-ground = [
 ]
 demo-imu = ["defmt", "rp2040", "run-imu", "run-flash"]
 demo-pressure = ["defmt", "rp2040", "run-pressure-and-temperature"]
-demo-sd = ["defmt", "rp2040", "run-storage"]
+demo-sd = ["defmt", "run-storage"]
 
 # shows **debug** datarate logs.
 # This is due to the additional compute needed and will effect the performance
@@ -142,20 +142,31 @@ arduino-plotter = []
 
 std = ["critical-section/std"]
 rp2040 = [
+    "dep:embassy-rp",
     "embassy-rp/rp2040",
     "embassy-executor/task-arena-size-98304",
+    # removed in 0.7
+    "embassy-executor/integrated-timers",
     "cortex-m",
     "critical-section/restore-state-u8",
     "embassy-executor/arch-cortex-m",
     "dep:embassy-net",
+    # Make sure to enable: "intrinsics", "rom-v2-intrinsics"
+    "embassy-rp/intrinsics",
+    "embassy-rp/rom-v2-intrinsics",
+    "embassy-rp/rom-func-cache",
 ]
 rp23 = [
+    "dep:embassy-rp",
     "embassy-rp/rp235xa",
     "embassy-rp/binary-info",
     "embassy-executor/task-arena-size-98304",
+    # removed in 0.7
+    "embassy-executor/integrated-timers",
     "cortex-m",
+    "critical-section/restore-state-u8",
     "embassy-executor/arch-cortex-m",
-    "dep:embassy-net",
+    # "dep:embassy-net",
 ]
 cortex-m = ["dep:cortex-m", "dep:cortex-m-rt", "dep:panic-probe"]
 defmt = [
@@ -177,16 +188,12 @@ defmt = [
 ]
 
 [dependencies]
-# RP2040 embassy hal
+# RP2040/RP23xx embassy hal
 embassy-rp = { workspace = true, optional = true, features = [
     "rt",
     "unstable-pac",
     "time-driver",
     "critical-section-impl",
-    # Make sure to enable: "intrinsics", "rom-v2-intrinsics"
-    "intrinsics",
-    "rom-v2-intrinsics",
-    "rom-func-cache",
 ] }
 # Embassy
 embassy-net = { workspace = true, optional = true, features = ["dhcpv4-hostname", "dhcpv4", "udp", "medium-ip"] }

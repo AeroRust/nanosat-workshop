@@ -40,7 +40,7 @@ use static_cell::StaticCell;
 use defmt::{error, info, trace, unwrap, warn};
 
 #[cfg(any(feature = "rp2040", feature = "rp23"))]
-bind_interrupts!(pub(crate) struct Irqs {
+bind_interrupts!(pub struct Irqs {
     UART0_IRQ => BufferedInterruptHandler<UART0>;
     UART1_IRQ => BufferedInterruptHandler<UART1>;
     I2C0_IRQ => i2c::InterruptHandler<I2C0>;
@@ -63,12 +63,12 @@ pub type SPI0Mutex = Mutex<CriticalSectionRawMutex, Spi<'static, SPI0, spi::Asyn
 
 #[cfg(any(feature = "rp2040", feature = "rp23"))]
 /// Stack - Core1 stack = Core 0 stack size.
-pub(crate) static CORE0_EXECUTOR: StaticCell<Executor> = StaticCell::new();
+pub static CORE0_EXECUTOR: StaticCell<Executor> = StaticCell::new();
 #[cfg(any(feature = "rp2040", feature = "rp23"))]
-pub(crate) static CORE1_EXECUTOR: StaticCell<Executor> = StaticCell::new();
+pub static CORE1_EXECUTOR: StaticCell<Executor> = StaticCell::new();
 #[cfg(any(feature = "rp2040", feature = "rp23"))]
 // TODO: Set a stack size for the second core
-pub(crate) static mut CORE1_STACK: MulticoreStack<{ 100 * 1024 }> = MulticoreStack::new();
+pub static mut CORE1_STACK: MulticoreStack<{ 100 * 1024 }> = MulticoreStack::new();
 
 pub struct Application {
     core1: CORE1,
@@ -101,8 +101,8 @@ pub struct Application {
 impl Application {
     /// Initialises all the peripherals which the [`Application`] will use.
     pub fn init() -> Self {
-        let peripherals = embassy_rp::init(Default::default());
         embassy_rp::pac::SIO.spinlock(31).write_value(1);
+        let peripherals = embassy_rp::init(Default::default());
 
         // add some delay to give an attached debug probe time to parse the
         // defmt RTT header. Reading that header might touch flash memory, which
@@ -383,7 +383,7 @@ impl Application {
 
 #[cfg(any(feature = "rp2040", feature = "rp23"))]
 #[embassy_executor::task()]
-async fn print() {
+pub async fn print() {
     loop {
         info!("Printing on Core 1 every 2 secs...");
         Timer::after(Duration::from_secs(2)).await;
@@ -392,7 +392,7 @@ async fn print() {
 
 #[cfg(any(feature = "rp2040", feature = "rp23"))]
 #[embassy_executor::task()]
-async fn blinky(mut led: Output<'static>) {
+pub async fn blinky(mut led: Output<'static>) {
     loop {
         info!("led on!");
         led.set_high();
