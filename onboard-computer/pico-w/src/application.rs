@@ -361,6 +361,7 @@ impl Application {
 
         // Blocking APIs + Flash can be accessed only from core0 so we add the FlashStorage in Core0
         let core0_executor = CORE0_EXECUTOR.init(Executor::new());
+        #[allow(unused_variables)]
         core0_executor.run(|spawner| {
             info!("init: core0 executor (blocking)");
 
@@ -925,12 +926,14 @@ mod wifi {
     }
 }
 
+
 #[cfg(feature = "usb")]
-mod usb {
+pub mod usb {
     use defmt::*;
 
     use embassy_rp::{peripherals::USB, usb::Driver};
     use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, pipe::Pipe};
+    use embassy_time::{with_timeout, Duration};
     use embassy_usb::{class::cdc_acm::CdcAcmClass, driver::EndpointError, UsbDevice};
 
     use portable_atomic::{AtomicBool, Ordering};
@@ -946,15 +949,15 @@ mod usb {
     /// is connected over USB.
     pub static USB_CONNECTED: AtomicBool = AtomicBool::new(false);
 
+    pub const MAX_PACKET_SIZE: usize = 64;
+    pub const MAX_PACKET_SIZE_U16: u16 = 64;
+    pub const MAX_PACKET_SIZE_U8: u8 = 64;
+
     #[embassy_executor::task]
     #[cfg(feature = "run-usb")]
     pub async fn run_usb(driver: MyUsbDriver) -> ! {
         use embassy_time::{with_timeout, Duration};
         use static_cell::StaticCell;
-
-        pub const MAX_PACKET_SIZE: usize = 64;
-        pub const MAX_PACKET_SIZE_U16: u16 = 64;
-        pub const MAX_PACKET_SIZE_U8: u8 = 64;
 
         let spawner = embassy_executor::Spawner::for_current_executor().await;
 
@@ -1017,6 +1020,8 @@ mod usb {
                 USB_CONNECTED.store(true, Ordering::SeqCst);
             }
             info!("USB: Connected");
+            // 1 ms = 1 000 000 ns
+            const PACKET_TIMEOUT: Duration = Duration::from_nanos(1_000_000);
 
             'pipe: loop {
                 let mut buf = [0; 256];
@@ -1027,76 +1032,10 @@ mod usb {
                     &buf[..bytes_read]
                 };
 
-                trace!("USB: to send {} bytes", bytes_to_send.len());
-
-                let total_packets = bytes_to_send.len().div_ceil(MAX_PACKET_SIZE);
-                for i in 0..total_packets {
-                    let start_i = i * 64;
-                    // we don't want to get out-of-bound for any leftover if
-                    // we cannot divide the bytes to full packets
-                    let end_i = (start_i + MAX_PACKET_SIZE).min(bytes_to_send.len());
-                    let current_packet = &bytes_to_send[start_i..end_i];
-                    trace!("Sending packet {}/{}", i + 1, total_packets);
-
-                    trace!("Current packet length: {} bytes", current_packet.len());
-
-                    // write this packet
-                    // let res = with_timeout(Duration::from_millis(50), tx.send(&data)).await;
-                    // match res {
-                    //     Ok(Ok(_)) => /* all good */,
-                    //     Ok(Err(_)) => /* sending error, not timeout */,
-                    //     Err(_) => /* timeout */,
-                    // }
-                    // 1 ms = 1000000 ns
-                    match with_timeout(
-                        Duration::from_nanos(100_000),
-                        class.write_packet(&bytes_to_send[start_i..end_i]),
-                    )
-                    .await
-                    {
-                        Ok(Ok(_)) => {
-                            info!(
-                                "Packet {}/{} sent ({} bytes)",
-                                i + 1,
-                                total_packets,
-                                current_packet.len()
-                            );
-                        }
-                        Ok(Err(EndpointError::BufferOverflow)) => {
-                            error!("Buffer overflow!");
-                        }
-                        Ok(Err(EndpointError::Disabled)) => {
-                            info!("USB: Disconnected");
-                            break 'pipe;
-                        }
-                        Err(_) => {
-                            warn!("USB: Packet sending Timeout")
-                        }
-                    }
-
-                    // send zero-length packet (ZLP) when the **last** chunked packet length is exactly MAX_PACKET_SIZE, i.e. 64
-                    if i == total_packets - 1
-                        && bytes_to_send[start_i..end_i].len() % MAX_PACKET_SIZE == 0
-                    {
-                        debug!("Sending ZLP packet for {}/{}...", i + 1, total_packets);
-                        match with_timeout(Duration::from_nanos(100_000), class.write_packet(&[]))
-                            .await
-                        {
-                            Ok(Ok(_)) => {
-                                info!("ZLP: Sent successfully")
-                            }
-                            Ok(Err(EndpointError::BufferOverflow)) => {
-                                error!("ZLP: Buffer overflow!");
-                            }
-                            Ok(Err(EndpointError::Disabled)) => {
-                                info!("USB: ZLP Disconnected");
-                                break 'pipe;
-                            }
-                            Err(_) => {
-                                warn!("USB: Packet sending Timeout")
-                            }
-                        }
-                    }
+                // on disconnect, make sure to exit the pipe loop
+                if let Err(()) = send_over_usb(&mut class, bytes_to_send, PACKET_TIMEOUT).await {
+                    USB_PIPE.clear();
+                    break 'pipe;
                 }
             }
 
@@ -1107,9 +1046,72 @@ mod usb {
         }
     }
 
+    pub async fn send_over_usb(
+        mut class: &mut CdcAcmClass<'static, MyUsbDriver>,
+        buffer: &[u8],
+        packet_timeout: Duration,
+    ) -> Result<(), ()> {
+        trace!("USB: to send {} bytes", buffer.len());
+
+        let total_packets = buffer.len().div_ceil(MAX_PACKET_SIZE);
+        for i in 0..total_packets {
+            let start_i = i * 64;
+            // we don't want to get out-of-bound for any leftover if
+            // we cannot divide the bytes to full packets
+            let end_i = (start_i + MAX_PACKET_SIZE).min(buffer.len());
+            let current_packet = &buffer[start_i..end_i];
+            trace!("Sending packet {}/{}", i + 1, total_packets);
+
+            trace!("Current packet length: {} bytes", current_packet.len());
+
+            match with_timeout(packet_timeout, class.write_packet(&buffer[start_i..end_i])).await {
+                Ok(Ok(_)) => {
+                    info!(
+                        "Packet {}/{} sent ({} bytes)",
+                        i + 1,
+                        total_packets,
+                        current_packet.len()
+                    );
+                }
+                Ok(Err(EndpointError::BufferOverflow)) => {
+                    error!("Buffer overflow!");
+                }
+                Ok(Err(EndpointError::Disabled)) => {
+                    info!("USB: Disconnected");
+                    return Err(());
+                }
+                Err(_) => {
+                    warn!("USB: Packet sending Timeout")
+                }
+            }
+
+            // send zero-length packet (ZLP) when the **last** chunked packet length is exactly MAX_PACKET_SIZE, i.e. 64
+            if i == total_packets - 1 && buffer[start_i..end_i].len() % MAX_PACKET_SIZE == 0 {
+                debug!("Sending ZLP packet for {}/{}...", i + 1, total_packets);
+                match with_timeout(Duration::from_nanos(100_000), class.write_packet(&[])).await {
+                    Ok(Ok(_)) => {
+                        info!("ZLP: Sent successfully")
+                    }
+                    Ok(Err(EndpointError::BufferOverflow)) => {
+                        error!("ZLP: Buffer overflow!");
+                    }
+                    Ok(Err(EndpointError::Disabled)) => {
+                        info!("USB: ZLP Disconnected");
+                        return Err(());
+                    }
+                    Err(_) => {
+                        warn!("USB: Packet sending Timeout")
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     #[embassy_executor::task]
     #[cfg(feature = "run-usb")]
-    async fn usb_task(mut usb: MyUsbDevice) -> ! {
+    pub async fn usb_task(mut usb: MyUsbDevice) -> ! {
         usb.run().await
     }
 
@@ -1125,7 +1127,6 @@ mod usb {
         }
     }
 }
-
 #[cfg(feature = "BMP388")]
 mod bmp388 {
     use core::fmt::Write as _;
