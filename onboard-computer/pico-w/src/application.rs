@@ -596,7 +596,7 @@ mod wifi {
     use core::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
     use portable_atomic::AtomicBool;
-    use rand::RngCore;
+    use rand_core::RngCore;
 
     use embassy_net::{Config, Stack, StackResources};
     use embassy_rp::{

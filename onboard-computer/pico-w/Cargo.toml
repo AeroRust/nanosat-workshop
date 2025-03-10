@@ -108,7 +108,7 @@ imu-recalibrate = []
 
 run-radio = ["wifi"]
 
-wifi = ["cyw43", "rand"]
+wifi = ["cyw43", "rand_core"]
 # feature which enables the Access Point instead of connecting to an AP
 wifi-ap = []
 # Infineon CYW43439
@@ -257,7 +257,7 @@ nmea = { workspace = true, optional = true }
 heapless.workspace = true
 
 # Random generators
-rand = { workspace = true, optional = true }
+rand_core = { workspace = true, optional = true }
 
 portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"] }
 critical-section.workspace = true

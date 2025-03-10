@@ -107,7 +107,7 @@ critical-section = { version = "1.2", default-features = false }
 nmea = { version = "0.7.0", git = "https://github.com/AeroRust/nmea", branch = "main", default-features = false }
 # nmea = { version = "0.7.0", default-features = false }
 
-rand = { version = "0.8", default-features = false }
+rand_core = "0.6"
 num = { version = "0.4", default-features = false }
 
 portable-atomic = { version = "1.11", default-features = false }

@@ -11,12 +11,14 @@ use panic_probe as _;
 
 #[cfg_attr(feature = "rp23", link_section = ".start_block")]
 #[cfg_attr(feature = "rp23", used)]
+#[cfg(feature = "rp23")]
 pub static IMAGE_DEF: embassy_rp::block::ImageDef = embassy_rp::block::ImageDef::secure_exe();
 
 // Program metadata for `picotool info`.
 // This isn't needed, but it's recomended to have these minimal entries.
 #[cfg_attr(feature = "rp23", link_section = ".bi_entries")]
 #[cfg_attr(feature = "rp23", used)]
+#[cfg(feature = "rp23")]
 pub static PICOTOOL_ENTRIES: [embassy_rp::binary_info::EntryAddr; 4] = [
     embassy_rp::binary_info::rp_program_name!(c"Blinky Example"),
     embassy_rp::binary_info::rp_program_description!(
