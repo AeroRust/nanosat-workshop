@@ -14,7 +14,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           # Use the same nightly as Embassy!
-          toolchain: "1.82"
+          toolchain: "1.84"
           components: rust-docs, rust-std, rust-src
           targets: x86_64-unknown-linux-gnu,riscv32imc-unknown-none-elf,thumbv6m-none-eabi
       - name: Build docs

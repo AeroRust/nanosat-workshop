@@ -2,7 +2,7 @@
 # Embassy uses nightly for `embassy-executor` for the tasks area,
 # however, we switched to stable and set the area size with a feature.
 # KEEP UP TO DATE with the `website` workflow!
-channel = "1.82"
+channel = "1.84"
 components = [ "cargo", "rust-src", "rustfmt", "llvm-tools" ]
 
 targets = ["thumbv6m-none-eabi", "riscv32imc-unknown-none-elf"]
