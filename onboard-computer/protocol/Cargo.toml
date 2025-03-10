@@ -16,13 +16,28 @@ defmt-03 = [
     "dep:defmt",
     "bmp388?/defmt-03",
     "bno055?/defmt-03",
+    "mpu6050?/defmt-03",
     "nmea?/defmt-03",
+    "cobs?/defmt",
     "embedded-sdmmc?/defmt-log",
     "embedded-hal-async?/defmt-03",
     "heapless/defmt-03",
+    "postcard/use-defmt",
+    "mpu6050?/defmt-03",
 ]
-serde = ["dep:serde", "bno055?/serde", "bmp388?/serde", "nmea?/serde", "mint?/serde", "chrono?/serde", "num?/serde"]
-postcard = ["dep:postcard", "dep:postcard-rpc", "serde"]
+serde = [
+    "dep:serde",
+    "bno055?/serde",
+    "bmp388?/serde",
+    "mpu6050?/serde",
+    "nmea?/serde",
+    "cobs?/serde",
+    "mint?/serde",
+    "chrono?/serde",
+    "num?/serde",
+]
+postcard = ["dep:postcard", "dep:postcard-rpc", "dep:postcard-schema", "serde"]
+cobs-encoding = ["dep:cobs"]
 
 pressure-and-temperature = []
 BMP388 = ["dep:bmp388"]
@@ -30,7 +45,10 @@ BMP388 = ["dep:bmp388"]
 imu = []
 BNO055 = ["dep:bno055"]
 
-nmea = ["dep:nmea"]
+# currently not used for the OBC
+imu-mpu6050 = ["dep:mpu6050"]
+
+nmea = ["dep:nmea", "nmea/GSA", "nmea/GSV", "nmea/RMC", "nmea/GLL"]
 GNSS = ["nmea"]
 
 status = []
@@ -49,18 +67,22 @@ filesystem-size-128GB = []
 
 [dependencies]
 serde = { workspace = true, default-features = false, optional = true }
-postcard = { workspace = true, optional = true, features = ["experimental-derive"]}
+postcard = { workspace = true, optional = true, features = ["experimental-derive"] }
+postcard-schema = { workspace = true, optional = true, features = [""] }
 postcard-rpc = { workspace = true, optional = true }
+cobs = { workspace = true, optional = true, default-features = false }
 
 defmt = { workspace = true, optional = true }
 
 # Sensors, peripherals and parsers
 # Pressure and Temperature sensor
 bmp388 = { workspace = true, optional = true, features = ["asynch", "config-builder"] }
-# IMU
+# Bosh IMU 9DOF
 bno055 = { workspace = true, optional = true }
-# Parsing NMEA 0183 senteneces from GNSS receiver
-nmea = { workspace = true, optional = true, default-features = false, features = ["all-sentences"] }
+# IMU 6DOF
+mpu6050 = { workspace = true, optional = true }
+# Parsing NMEA 0183 sentences from GNSS receiver
+nmea = { workspace = true, optional = true, default-features = false }
 
 # SD card storage
 embedded-sdmmc = { workspace = true, optional = true }

@@ -6,23 +6,80 @@ edition = "2021"
 default-run = "pico-w"
 
 [features]
-# default = ["rp2040", "run-gnss"]
-# default = ["rp2040", "run-radio"]
-# default = ["rp2040", "run-gnss", "run-pressure-and-temperature", "run-radio", "run-imu", "run-usb", "arduino-plotter", "run-flash"]
-# default = ["rp2040", "run-imu", "arduino-plotter", "run-flash", "run-status"]
-# default = ["rp2040", "run-imu", "run-pressure-and-temperature", "run-usb", "arduino-plotter", "run-flash", "run-status"]
-default = ["defmt", "flash-wifi-firmware", "run-gnss", "rp2040", "run-imu", "run-pressure-and-temperature", "run-radio", "run-usb", "arduino-plotter", "run-flash", "run-status", "run-storage"]
+default = [
+    "defmt",
+    "flash-wifi-firmware",
+    "run-gnss",
+    "rp2040",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "run-radio",
+    "run-usb",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
 # default = ["rp2040", "run-pressure-and-temperature", "run-radio"]
 # default = ["rp2040", "run-pressure-and-temperature", "run-radio", "run-imu"]
 
 # imu w/ wifi w/ flash w/ storage (SD card)
-demo-obc-wifi = ["defmt", "rp2040", "flash-wifi-firmware", "run-radio", "wifi", "run-usb", "run-imu", "run-pressure-and-temperature", "arduino-plotter", "run-flash", "run-status", "run-storage"]
-demo-obc-ap = ["defmt", "rp2040", "flash-wifi-firmware", "run-radio", "wifi-ap", "run-usb", "run-gnss", "run-imu", "run-pressure-and-temperature", "arduino-plotter", "run-flash", "run-status", "run-storage"]
-demo-sky = ["defmt", "flash-wifi-firmware", "rp2040", "run-imu", "run-pressure-and-temperature", "run-radio", "arduino-plotter", "run-flash", "run-status", "run-storage"]
-demo-ground = ["defmt", "flash-wifi-firmware", "rp2040", "run-imu", "run-pressure-and-temperature", "run-radio", "run-usb", "arduino-plotter", "run-flash", "run-status", "run-storage"]
-demo-imu = ["defmt", "rp2040", "run-imu", "run-flash"]
+demo-obc-wifi = [
+    "defmt",
+    "rp2040",
+    "flash-wifi-firmware",
+    "run-radio",
+    "wifi",
+    "run-usb",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
+demo-obc-ap = [
+    "defmt",
+    "rp2040",
+    "flash-wifi-firmware",
+    "run-radio",
+    "wifi-ap",
+    "run-usb",
+    "run-gnss",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
+demo-sky = [
+    "defmt",
+    "flash-wifi-firmware",
+    "rp2040",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "run-radio",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
+demo-ground = [
+    "defmt",
+    "flash-wifi-firmware",
+    "rp2040",
+    "run-imu",
+    "run-pressure-and-temperature",
+    "run-radio",
+    "run-usb",
+    "arduino-plotter",
+    "run-flash",
+    "run-status",
+    "run-storage",
+]
 demo-pressure = ["defmt", "rp2040", "run-pressure-and-temperature"]
-demo-sd = ["defmt", "rp2040", "run-storage"]
+demo-sd = ["defmt", "run-storage"]
 
 # shows **debug** datarate logs.
 # This is due to the additional compute needed and will effect the performance
@@ -31,7 +88,8 @@ demo-sd = ["defmt", "rp2040", "run-storage"]
 
 dummy-print = []
 run-gnss = ["LC76G"]
-LC76G = ["dep:lc76g", "dep:nmea"]
+# Use the same features as the Protocol!
+LC76G = ["dep:lc76g", "protocol/GNSS", "dep:nmea", "nmea/GSA", "nmea/GSV", "nmea/RMC", "nmea/GLL"]
 
 run-pressure-and-temperature = ["BMP388"]
 BMP388 = ["dep:bmp388", "protocol/BMP388"]
@@ -78,18 +136,72 @@ serial-studio = []
 arduino-plotter = []
 
 std = ["critical-section/std"]
-rp2040 = ["embassy-executor/task-arena-size-98304", "cortex-m", "critical-section/restore-state-u8", "embassy-rp/rp2040", "embassy-executor/arch-cortex-m", "dep:embassy-net"]
+rp2040 = [
+    "dep:embassy-rp",
+    "embassy-rp/rp2040",
+    "embassy-executor/task-arena-size-98304",
+    # removed in 0.7
+    "embassy-executor/integrated-timers",
+    "cortex-m",
+    "critical-section/restore-state-u8",
+    "embassy-executor/arch-cortex-m",
+    "dep:embassy-net",
+    # Make sure to enable: "intrinsics", "rom-v2-intrinsics"
+    "embassy-rp/intrinsics",
+    "embassy-rp/rom-v2-intrinsics",
+    "embassy-rp/rom-func-cache",
+]
+rp23 = [
+    "dep:embassy-rp",
+    "embassy-rp/rp235xa",
+    "embassy-rp/binary-info",
+    "embassy-executor/task-arena-size-98304",
+    # removed in 0.7
+    "embassy-executor/integrated-timers",
+    "cortex-m",
+    "critical-section/restore-state-u8",
+    "embassy-executor/arch-cortex-m",
+    # "dep:embassy-net",
+]
 cortex-m = ["dep:cortex-m", "dep:cortex-m-rt", "dep:panic-probe"]
-defmt = ["dep:defmt", "dep:defmt-rtt", "protocol/defmt-03", "cyw43?/defmt", "cyw43-pio?/defmt", "embassy-usb?/defmt", "embassy-executor/defmt", "embassy-sync/defmt", "embassy-rp?/defmt", "embassy-net?/defmt", "embassy-embedded-hal/defmt", "embassy-time/defmt-timestamp-uptime-us", "postcard/use-defmt", "embedded-sdmmc?/defmt-log", "nmea/defmt-03"]
+defmt = [
+    "dep:defmt",
+    "dep:defmt-rtt",
+    "protocol/defmt-03",
+    "cyw43?/defmt",
+    "cyw43-pio?/defmt",
+    "embassy-usb?/defmt",
+    "embassy-executor/defmt",
+    "embassy-sync/defmt",
+    "embassy-rp?/defmt",
+    "embassy-net?/defmt",
+    "embassy-embedded-hal/defmt",
+    "embassy-time/defmt-timestamp-uptime-us",
+    "postcard/use-defmt",
+    "embedded-sdmmc?/defmt-log",
+    "nmea/defmt-03",
+    "mpu6050/defmt-03",
+]
+
+perf-debug = []
+mpu6050 = ["dep:mpu6050"]
+
+filesystem-size-32GB = []
+filesystem-size-64GB = []
+filesystem-size-128GB = []
 
 [dependencies]
-# RP2040 embassy hal
-# Make sure to enable: "intrinsics", "rom-v2-intrinsics"
-embassy-rp = { workspace = true, optional = true, features = ["rt", "unstable-pac", "time-driver", "critical-section-impl"] }
+# RP2040/RP23xx embassy hal
+embassy-rp = { workspace = true, optional = true, features = [
+    "rt",
+    "unstable-pac",
+    "time-driver",
+    "critical-section-impl",
+] }
 # Embassy
 embassy-net = { workspace = true, optional = true, features = ["dhcpv4-hostname", "dhcpv4", "udp", "medium-ip"] }
 embassy-usb = { workspace = true, default-features = false, optional = true }
-embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread", "executor-interrupt"] }
+embassy-executor = { workspace = true, features = ["executor-thread", "executor-interrupt"] }
 embassy-futures = { workspace = true }
 embassy-sync = { workspace = true }
 embassy-embedded-hal = { workspace = true }
@@ -98,12 +210,14 @@ embassy-time = { workspace = true }
 # cortex-m for RP2040
 cortex-m = { workspace = true, optional = true, features = ["inline-asm"] }
 cortex-m-rt = { workspace = true, optional = true }
-panic-probe = { workspace = true, optional = true, features = ["print-defmt"]}
+panic-probe = { workspace = true, optional = true, features = ["print-defmt"] }
 
 # Embedded hals
 embedded-hal = { workspace = true }
 embedded-hal-async = { workspace = true }
 embedded-io-async.workspace = true
+
+futures = { workspace = true }
 
 # Defmt logging
 defmt = { workspace = true, optional = true }
@@ -118,7 +232,7 @@ serde = { workspace = true, default-features = false }
 postcard = { workspace = true }
 postcard-rpc = { workspace = true }
 
-protocol = { version = "0.1", path = "../protocol", features = ["postcard", "defmt-03"]}
+protocol = { version = "0.1", path = "../protocol", features = ["postcard", "defmt-03"] }
 # datarate = { version = "0.1", path = "../../datarate" }
 
 # Sensors, peripherals and parsers
@@ -133,9 +247,12 @@ lc76g = { workspace = true, optional = true }
 cyw43 = { workspace = true, features = ["firmware-logs"], optional = true }
 cyw43-pio = { workspace = true, features = ["overclock"], optional = true }
 
+mpu6050 = { workspace = true, optional = true }
+
+
 embedded-sdmmc = { workspace = true, optional = true }
 
-# Parsing NMEA 0183 senteneces from GNSS receiver
+# Parsing NMEA 0183 sentences from GNSS receiver
 nmea = { workspace = true, optional = true }
 
 heapless.workspace = true
@@ -143,7 +260,7 @@ heapless.workspace = true
 # Random generators
 rand = { workspace = true, optional = true }
 
-portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"]}
+portable-atomic = { workspace = true, default-features = false, features = ["require-cas", "critical-section"] }
 critical-section.workspace = true
 
 [build-dependencies]
