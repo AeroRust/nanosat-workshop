@@ -88,7 +88,10 @@ cortex-m = { workspace = true, optional = true }
 cortex-m-rt = { workspace = true, optional = true }
 
 # ESP32C3
-esp-hal = { workspace = true, optional = true }
+esp-hal = { workspace = true, features = [
+    # "async",
+    "esp32c3",
+], optional = true }
 # debugging
 esp-backtrace = { workspace = true, optional = true }
 esp-println = { workspace = true, optional = true, default-features = false, features = ["critical-section", "jtag-serial"] }

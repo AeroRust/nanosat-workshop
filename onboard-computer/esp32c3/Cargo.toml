@@ -47,7 +47,7 @@ LC76G = ["dep:lc76g", "dep:nmea"]
 
 [dependencies]
 esp-hal.workspace = true
-esp-hal-embassy = { version = "0.5", features = ["integrated-timers", "esp32c3"] }
+esp-hal-embassy = { version = "0.6", features = ["integrated-timers", "esp32c3"] }
 
 # ESP32C3
 # debugging

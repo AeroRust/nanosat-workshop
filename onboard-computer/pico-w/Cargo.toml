@@ -6,11 +6,6 @@ edition = "2021"
 default-run = "pico-w"
 
 [features]
-# default = ["rp2040", "run-gnss"]
-# default = ["rp2040", "run-radio"]
-# default = ["rp2040", "run-gnss", "run-pressure-and-temperature", "run-radio", "run-imu", "run-usb", "arduino-plotter", "run-flash"]
-# default = ["rp2040", "run-imu", "arduino-plotter", "run-flash", "run-status"]
-# default = ["rp2040", "run-imu", "run-pressure-and-temperature", "run-usb", "arduino-plotter", "run-flash", "run-status"]
 default = [
     "defmt",
     "flash-wifi-firmware",
@@ -94,7 +89,8 @@ demo-sd = ["defmt", "run-storage"]
 
 dummy-print = []
 run-gnss = ["LC76G"]
-LC76G = ["dep:lc76g", "dep:nmea"]
+# Use the same features as the Protocol!
+LC76G = ["dep:lc76g", "protocol/GNSS", "dep:nmea", "nmea/GSA", "nmea/GSV", "nmea/RMC", "nmea/GLL"]
 
 run-pressure-and-temperature = ["BMP388"]
 BMP388 = ["dep:bmp388", "protocol/BMP388"]
@@ -146,7 +142,7 @@ rp2040 = [
     "embassy-rp/rp2040",
     "embassy-executor/task-arena-size-98304",
     # removed in 0.7
-    "embassy-executor/integrated-timers",
+    # "embassy-executor/integrated-timers",
     "cortex-m",
     "critical-section/restore-state-u8",
     "embassy-executor/arch-cortex-m",
@@ -161,8 +157,6 @@ rp23 = [
     "embassy-rp/rp235xa",
     "embassy-rp/binary-info",
     "embassy-executor/task-arena-size-98304",
-    # removed in 0.7
-    "embassy-executor/integrated-timers",
     "cortex-m",
     "critical-section/restore-state-u8",
     "embassy-executor/arch-cortex-m",
@@ -185,7 +179,15 @@ defmt = [
     "postcard/use-defmt",
     "embedded-sdmmc?/defmt-log",
     "nmea/defmt-03",
+    "mpu6050/defmt-03",
 ]
+
+perf-debug = []
+mpu6050 = ["dep:mpu6050"]
+
+filesystem-size-32GB = []
+filesystem-size-64GB = []
+filesystem-size-128GB = []
 
 [dependencies]
 # RP2040/RP23xx embassy hal
@@ -214,6 +216,8 @@ embedded-hal = { workspace = true }
 embedded-hal-async = { workspace = true }
 embedded-io-async.workspace = true
 
+futures = { workspace = true }
+
 # Defmt logging
 defmt = { workspace = true, optional = true }
 defmt-rtt = { workspace = true, optional = true }
@@ -225,7 +229,7 @@ once_cell = { workspace = true, default-features = false, features = ["critical-
 # Serialization
 serde = { workspace = true, default-features = false }
 postcard = { workspace = true }
-postcard-rpc = { workspace = true }
+postcard-rpc = { workspace = true, features = ["embassy-usb-0_4-server"] }
 
 protocol = { version = "0.1", path = "../protocol", features = ["postcard", "defmt-03"] }
 # datarate = { version = "0.1", path = "../../datarate" }
@@ -240,11 +244,14 @@ sgp40 = { workspace = true, optional = true }
 lc76g = { workspace = true, optional = true }
 # Pico W WiFi
 cyw43 = { workspace = true, features = ["firmware-logs"], optional = true }
-cyw43-pio = { workspace = true, features = ["overclock"], optional = true }
+cyw43-pio = { workspace = true, optional = true }
+
+mpu6050 = { workspace = true, optional = true }
+
 
 embedded-sdmmc = { workspace = true, optional = true }
 
-# Parsing NMEA 0183 senteneces from GNSS receiver
+# Parsing NMEA 0183 sentences from GNSS receiver
 nmea = { workspace = true, optional = true }
 
 heapless.workspace = true
