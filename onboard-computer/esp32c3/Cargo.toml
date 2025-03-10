@@ -42,12 +42,9 @@ shtcx = ["dep:shtcx"]
 run-gnss = ["LC76G"]
 LC76G = ["dep:lc76g", "dep:nmea"]
 
-# embassy-time-systick = [, "embassy-time/tick-hz-16_000_000"]
-# embassy-time-timg0 = ["esp-hal-embassy/integrated-timers", "esp-hal-embassy/esp32c3", "embassy-time/tick-hz-1_000_000"]
-
 [dependencies]
 esp-hal.workspace = true
-esp-hal-embassy = { version = "0.6", features = ["integrated-timers", "esp32c3"] }
+esp-hal-embassy = { version = "0.6", features = ["esp32c3"] }
 
 # ESP32C3
 # debugging
@@ -58,7 +55,6 @@ defmt = { workspace = true, optional = true }
 
 defmt-rtt = { workspace = true, optional = true }
 
-# embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
 embassy-executor = { workspace = true }
 embassy-sync.workspace = true
 embassy-futures.workspace = true

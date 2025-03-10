@@ -1,5 +1,6 @@
 use core::cell::RefCell;
 
+use cyw43_pio::DEFAULT_CLOCK_DIVIDER;
 use embassy_embedded_hal::shared_bus::{
     asynch::i2c::I2cDevice, blocking::i2c::I2cDevice as BlockingI2cDevice,
 };
@@ -183,6 +184,7 @@ impl Application {
             cyw43_pio::PioSpi::new(
                 &mut pio.common,
                 pio.sm0,
+                DEFAULT_CLOCK_DIVIDER,
                 pio.irq0,
                 cs,
                 peripherals.PIN_24,
@@ -594,6 +596,7 @@ mod wifi {
     use core::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
     use portable_atomic::AtomicBool;
+    use rand::RngCore;
 
     use embassy_net::{Config, Stack, StackResources};
     use embassy_rp::{
@@ -737,8 +740,9 @@ mod wifi {
                 .set_power_management(cyw43::PowerManagementMode::Performance)
                 .await;
 
+            
             // Generate random seed
-            let seed = rng.next_u64(); // chosen by fair dice roll. guaranteed to be random.
+            let seed = rng.next_u64(); 
 
             // Init network stack
             // we use only 1 socket for now
@@ -925,7 +929,6 @@ mod wifi {
         runner.run().await
     }
 }
-
 
 #[cfg(feature = "usb")]
 pub mod usb {
