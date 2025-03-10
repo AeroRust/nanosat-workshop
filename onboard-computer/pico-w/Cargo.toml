@@ -141,7 +141,7 @@ rp2040 = [
     "embassy-rp/rp2040",
     "embassy-executor/task-arena-size-98304",
     # removed in 0.7
-    "embassy-executor/integrated-timers",
+    # "embassy-executor/integrated-timers",
     "cortex-m",
     "critical-section/restore-state-u8",
     "embassy-executor/arch-cortex-m",
@@ -156,8 +156,6 @@ rp23 = [
     "embassy-rp/rp235xa",
     "embassy-rp/binary-info",
     "embassy-executor/task-arena-size-98304",
-    # removed in 0.7
-    "embassy-executor/integrated-timers",
     "cortex-m",
     "critical-section/restore-state-u8",
     "embassy-executor/arch-cortex-m",
@@ -230,7 +228,7 @@ once_cell = { workspace = true, default-features = false, features = ["critical-
 # Serialization
 serde = { workspace = true, default-features = false }
 postcard = { workspace = true }
-postcard-rpc = { workspace = true }
+postcard-rpc = { workspace = true, features = ["embassy-usb-0_4-server"] }
 
 protocol = { version = "0.1", path = "../protocol", features = ["postcard", "defmt-03"] }
 # datarate = { version = "0.1", path = "../../datarate" }
@@ -245,7 +243,7 @@ sgp40 = { workspace = true, optional = true }
 lc76g = { workspace = true, optional = true }
 # Pico W WiFi
 cyw43 = { workspace = true, features = ["firmware-logs"], optional = true }
-cyw43-pio = { workspace = true, features = ["overclock"], optional = true }
+cyw43-pio = { workspace = true, optional = true }
 
 mpu6050 = { workspace = true, optional = true }
 

@@ -84,7 +84,7 @@ cortex-m = { workspace = true, optional = true }
 cortex-m-rt = { workspace = true, optional = true }
 
 # ESP32C3
-hal = { package = "esp-hal", version = "0.21", features = [
+hal = { package = "esp-hal", version = "0.23", features = [
     # "async",
     "esp32c3",
 ], optional = true }

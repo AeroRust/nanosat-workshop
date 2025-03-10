@@ -47,13 +47,13 @@ LC76G = ["dep:lc76g", "dep:nmea"]
 
 [dependencies]
 
-hal = { package = "esp-hal", version = "0.21", features = [
+hal = { package = "esp-hal", version = "0.23", features = [
     # "async",
     "esp32c3",
     # "log",
     # "portable-atomic",
 ] }
-esp-hal-embassy = { version = "0.4", features = ["integrated-timers", "esp32c3"]}
+esp-hal-embassy = { version = "0.6", features = ["esp32c3"]}
 
 # ESP32C3
 # # debugging
@@ -62,7 +62,6 @@ esp-hal-embassy = { version = "0.4", features = ["integrated-timers", "esp32c3"]
 log = { workspace = true, optional = true }
 defmt = { workspace = true, optional = true }
 
-# embassy-executor = { workspace = true, features = ["integrated-timers", "executor-thread"] }
 embassy-executor = { workspace = true }
 embassy-sync.workspace = true
 embassy-futures.workspace = true

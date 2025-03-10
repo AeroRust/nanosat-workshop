@@ -23,6 +23,7 @@ defmt-03 = [
     "embedded-hal-async?/defmt-03",
     "heapless/defmt-03",
     "postcard/use-defmt",
+    "postcard-schema/defmt-v0_3",
     "mpu6050?/defmt-03",
 ]
 serde = [
@@ -68,7 +69,7 @@ filesystem-size-128GB = []
 [dependencies]
 serde = { workspace = true, default-features = false, optional = true }
 postcard = { workspace = true, optional = true, features = ["experimental-derive"] }
-postcard-schema = { workspace = true, optional = true, features = [""] }
+postcard-schema = { workspace = true, optional = true }
 postcard-rpc = { workspace = true, optional = true }
 cobs = { workspace = true, optional = true, default-features = false }
 
