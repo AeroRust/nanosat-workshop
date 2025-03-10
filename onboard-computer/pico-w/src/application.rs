@@ -1,6 +1,5 @@
 use core::cell::RefCell;
 
-use cyw43_pio::DEFAULT_CLOCK_DIVIDER;
 use embassy_embedded_hal::shared_bus::{
     asynch::i2c::I2cDevice, blocking::i2c::I2cDevice as BlockingI2cDevice,
 };
@@ -184,7 +183,7 @@ impl Application {
             cyw43_pio::PioSpi::new(
                 &mut pio.common,
                 pio.sm0,
-                DEFAULT_CLOCK_DIVIDER,
+                cyw43_pio::DEFAULT_CLOCK_DIVIDER,
                 pio.irq0,
                 cs,
                 peripherals.PIN_24,
