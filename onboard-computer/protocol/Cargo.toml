@@ -24,7 +24,6 @@ defmt-03 = [
     "heapless/defmt-03",
     "postcard/use-defmt",
     "postcard-schema/defmt-v0_3",
-    "mpu6050?/defmt-03",
 ]
 serde = [
     "dep:serde",

@@ -739,9 +739,8 @@ mod wifi {
                 .set_power_management(cyw43::PowerManagementMode::Performance)
                 .await;
 
-            
             // Generate random seed
-            let seed = rng.next_u64(); 
+            let seed = rng.next_u64();
 
             // Init network stack
             // we use only 1 socket for now
@@ -1982,6 +1981,7 @@ mod bno055 {
             let mut imu = Bno055::new(i2c_blocking_dev).with_alternative_address();
             if let Err(err) = imu.init(&mut delay) {
                 error!("(bno055) Failed to initialise IMU, retry..");
+                Timer::after(Duration::from_secs(2)).await;
                 continue;
             }
             info!("(bno055) IMU initialized");

@@ -238,15 +238,16 @@ protocol = { version = "0.1", path = "../protocol", features = ["postcard", "def
 # Pressure and Temperature sensor - enable async version
 bmp388 = { workspace = true, optional = true, features = ["asynch", "config-builder", "serde", "defmt-03"] }
 bme68x-rust = { workspace = true, optional = true }
+# Bosh IMU 9 DOF
 bno055 = { workspace = true, optional = true }
+# 6DOF IMU
+mpu6050 = { workspace = true, optional = true }
 sgp40 = { workspace = true, optional = true }
 # GNSS receiver with NMEA 0183 sentences
 lc76g = { workspace = true, optional = true }
 # Pico W WiFi
 cyw43 = { workspace = true, features = ["firmware-logs"], optional = true }
 cyw43-pio = { workspace = true, optional = true }
-
-mpu6050 = { workspace = true, optional = true }
 
 
 embedded-sdmmc = { workspace = true, optional = true }
